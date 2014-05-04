@@ -1,0 +1,26 @@
+{
+  "name": "dbh-pg",
+  "version": "0.1.0",
+  "description": "dbh-pg",
+  "main": "lib/DBH.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": "",
+  "keywords": [
+    "pg",
+    "database",
+    "db",
+    "dbh"
+  ],
+  "author": "Rodrigo González",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "pg" : "3.*",
+    "bluebird" : "1.*"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  }
+}
