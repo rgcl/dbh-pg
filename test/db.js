@@ -8,12 +8,13 @@
 
 var assert = require("assert");
 var DBH = require('../');
+var db;
 
 describe('DBH', function() {
     describe('Instantiate BDH', function() {
         
         it('instantiate DBH to db', function() {
-            var db = new BDH({
+            db = new DBH({
                 host: process.argv[2] || 'localhost',
                 port: process.argv[3] || '5432',
                 user: process.argv[4] || 'postgres',
