@@ -8,7 +8,7 @@
 
 var assert = require('assert'),
     DBH = require('../'),
-    Promise = require('bluebird');
+    Promise = require('bluebird'),
     db,
     people = [
         {name: 'Aaron',    age: 10},
