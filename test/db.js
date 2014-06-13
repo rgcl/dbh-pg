@@ -58,6 +58,7 @@ describe('DBH', function() {
         });
         
         it('connecting', function(testDone) {
+            console.log(db.conn());
             db.conn().done(function() {
                 testDone();
             }).catch(function(err) {
