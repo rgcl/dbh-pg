@@ -6,7 +6,9 @@
  * ======================================================================== */
 'use strict';
 
-var assert = require('assert'),
+describe('DBH', function() {
+    
+    var assert = require('assert'),
     DBH = require('../'),
     Promise = require('bluebird'),
     db,
@@ -38,8 +40,6 @@ var assert = require('assert'),
         {name: 'Yoyo',     age: 250},
         {name: 'Zanzabar', age: 260}
     ];
-
-describe('DBH', function() {
     
     describe('Instantiate BDH', function() {
         
