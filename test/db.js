@@ -11,13 +11,13 @@ describe('DBH', function() {
     var assert = require('assert'),
         DBH = require('../'),
         Promise = require('bluebird'),
-        db = new DBH({
+        db = new DBH('postgres://postgres@localhost/db2test'/*{
             host: process.argv[2] || 'localhost',
             port: process.argv[3] || '5432',
             user: process.argv[4] || 'postgres',
             password: process.argv[5] || null,
             database: process.argv[6] || 'db2test'
-        }),
+        }*/),
         people = [
             {name: 'Aaron',    age: 10},
             {name: 'Brian',    age: 20},
