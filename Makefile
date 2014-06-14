@@ -2,6 +2,6 @@ TESTS = test/*.js
 
 test:
 	@./node_modules/.bin/mocha \
-		$(TESTS)
+		$(TESTS) -R spec
 
 .PHONY: test bench
