@@ -54,13 +54,14 @@ describe('DBH', function() {
                 name varchar(10),\
                 age integer\
             )'
-        ))/*.then(function() {
+        )).then(function() {
             var me = this,
                 prepared = DBH.prepare('insert into person(name, age) values ($1, $2)');
             return Promise.all(people.map(function(person) {
                 return me.exec(prepared(person.name, person.age));
             }));
-        });*/
+        });
+        
     });
     
     describe('elemental', function() {
@@ -77,29 +78,12 @@ describe('DBH', function() {
             return db.conn();
         });
         
-    });
-    
-    describe('#insert', function() {
-        
-        it('insert person', function() {
-            return db.conn().then(DBH.insert('person', {
-                name : 'Roro',
-                age: 24
-            }));
+        it('exec', function() {
+            return db.conn().then(DBH.exec(
+                'select sum(age) from person'
+            ));
         });
         
     });
-    
-    /*describe('#exec SQL SUM', function() {
-        
-        it('SQL SUM', function() {
-            return db.conn()
-                .then(DBH.exec('SELECT 2 + 2'))
-                .then(function(result) {
-                    
-                });
-        });
-        
-    });*/
     
 });
