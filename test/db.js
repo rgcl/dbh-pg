@@ -81,10 +81,38 @@ describe('DBH', function() {
             return db.conn();
         });
         
-        it('exec', function() {
+        it('exec "select count(age) from person" whith DBH.count', function() {
+            return db.conn()
+                .then(DBH.count('person'))
+                .then(function(value) {
+                    assert.equal(value, 26);
+                });
+        });
+        
+        it('exec "select count(age) from person" whith this.count', function() {
+            return db.conn().then(function() {
+                return this.count('person');
+            }).then(function(value) {
+                assert.equal(value, 26);
+            });
+        });
+        
+        it('exec "select count(age) from person" whith DBH.exec', function() {
             return db.conn().then(DBH.exec(
-                'select sum(age) from person'
-            ));
+                'select count(age) from person'
+            )).then(function(value) {
+                assert.equal(value, 26);
+            });
+        });
+        
+        it('exec "select count(age) from person" whith this.exec', function() {
+            return db.conn().then(function() {
+                return this.exec(
+                'select count(age) from person'
+                )
+            }).then(function(value) {
+                assert.equal(value, 26);
+            });
         });
         
     });
