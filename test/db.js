@@ -107,9 +107,7 @@ describe('DBH', function() {
         
         it('exec "select count(age) from person" whith this.exec', function() {
             return db.conn().then(function() {
-                return this.exec(
-                'select count(age) from person'
-                )
+                return this.exec('select count(age) from person')
             }).then(function(result) {
                 assert.equal(result.rows[0].count, 26);
             });
