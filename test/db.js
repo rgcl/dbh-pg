@@ -85,7 +85,7 @@ describe('DBH', function() {
             return db.conn()
                 .then(DBH.count('person'))
                 .then(function(result) {
-                    assert.equal(result[0].count, 26);
+                    assert.equal(result.rows[0].count, 26);
                 });
         });
         
@@ -93,7 +93,7 @@ describe('DBH', function() {
             return db.conn().then(function() {
                 return this.count('person');
             }).then(function(result) {
-                assert.equal(result[0].count, 26);
+                assert.equal(result.rows[0].count, 26);
             });
         });
         
@@ -101,7 +101,7 @@ describe('DBH', function() {
             return db.conn().then(DBH.exec(
                 'select count(age) from person'
             )).then(function(result) {
-                assert.equal(result[0].count, 26);
+                assert.equal(result.rows[0].count, 26);
             });
         });
         
@@ -111,7 +111,7 @@ describe('DBH', function() {
                 'select count(age) from person'
                 )
             }).then(function(result) {
-                assert.equal(result[0].count, 26);
+                assert.equal(result.rows[0].count, 26);
             });
         });
         
