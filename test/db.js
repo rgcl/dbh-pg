@@ -48,6 +48,9 @@ describe('DBH', function() {
         ];
     
     before(function() {
+        
+        Promise.longStackTraces();
+        
         return db.conn().then(DBH.exec(
             'create table person(\
                 id serial primary key,\
