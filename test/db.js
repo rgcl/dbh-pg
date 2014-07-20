@@ -116,7 +116,7 @@ describe('DBH', function() {
         it('exec "select count(age) from person" whith DBH.fetchScalar', function() {
             return db.conn().then(DBH.fetchScalar(
                 'select count(age) from person'
-            )).then(function(result) {
+            )).then(function(count) {
                 assert.equal(count, 26);
             });
         });
