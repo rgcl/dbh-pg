@@ -10,7 +10,7 @@ Database Handler for PostgreSQL writer upon pg and bluebird.
 ## example
 
 ```javascript
-var DBH = require('dbh-ph'),
+var DBH = require('dbh-pg'),
     db = new DBH('postgres://postgres@localhost/db2test');
     
 var nodemailer = require('nodemailer'), // no included, used for this example only
