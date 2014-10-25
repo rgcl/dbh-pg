@@ -3,7 +3,7 @@
 [![NPM version](https://badge.fury.io/js/dbh-pg.png)](http://badge.fury.io/js/dbh-pg)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
 
-Database Handler for PostgreSQL writer upon ``pg`` and ``bluebird``.
+Database Handler for PostgreSQL writer upon [pg](https://github.com/brianc/node-postgres) and [bluebird](https://github.com/petkaantonov/bluebird).
 
 ## Quick example
 
