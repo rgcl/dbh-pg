@@ -60,7 +60,7 @@ using(db.conn(), function (conn) {
 ```javascript
 // print array of data (from query) and the total items in the table
 using(db.conn(), db.conn(), function (conn1, conn2) {
-    Promise.all({
+    Promise.props({
         items : conn1.fetchAll('select * from user limit 10'),
         total : conn2.fetchOne('select count(*) from user')
     })
