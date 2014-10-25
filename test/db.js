@@ -12,9 +12,7 @@ describe('DBH', function() {
         DBH = require('../'),
         Promise = require('bluebird'),
         using = Promise.using,
-        db = new DBH('postgres://postgres@localhost/db2test', {
-            verbose : true
-        }),
+        db = new DBH('postgres://postgres@localhost/db2test'),
         people = [
             {name: 'Aaron',    age: 10},
             {name: 'Brian',    age: 20},
@@ -47,6 +45,8 @@ describe('DBH', function() {
     before(function() {
         
         Promise.longStackTraces();
+        
+        db.verbose = true;
         
         return using(db.conn(), function (conn) {
             return conn.exec(
