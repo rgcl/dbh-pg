@@ -1,27 +1,33 @@
 {
   "name": "dbh-pg",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "description": "dbh-pg",
   "main": "lib/DBH.js",
   "scripts": {
     "test": "make test"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/sapienlab/dbh-pg"
+    "type": "git",
+    "url": "https://github.com/sapienlab/dbh-pg"
   },
   "keywords": [
+    "then",
+    "promise",
+    "postgres",
     "pg",
     "database",
     "db",
     "dbh"
   ],
-  "author": "Rodrigo González",
+  "author": {
+    "name": "Rodrigo González",
+    "email": "rodrigo@sapienlab.com"
+  },
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "pg" : "3.*",
-    "bluebird" : "1.*"
+    "pg": "3.*",
+    "bluebird": "2.*"
   },
   "devDependencies": {
     "mocha": "*"

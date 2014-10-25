@@ -11,6 +11,7 @@ describe('DBH', function() {
     var assert = require('assert'),
         DBH = require('../'),
         Promise = require('bluebird'),
+        using = Promise.using,
         db = new DBH('postgres://postgres@localhost/db2test'/*{
             host: process.argv[2] || 'localhost',
             port: process.argv[3] || '5432',
@@ -51,18 +52,20 @@ describe('DBH', function() {
         
         Promise.longStackTraces();
         
-        return db.conn().then(DBH.exec(
-            'create table person(\
-                id serial primary key,\
-                name varchar(10),\
-                age integer\
-            )'
-        )).then(function() {
-            var me = this,
+        return using(db.conn(), function (conn) {
+            return conn.exec(
+                'create table person(\
+                    id serial primary key,\
+                    name varchar(10),\
+                    age integer\
+                )'
+            ).then(function () {
+                var me = this,
                 prepared = DBH.prepare('insert into person(name, age) values ($1, $2)');
-            return Promise.all(people.map(function(person) {
-                return me.exec(prepared(person.name, person.age));
-            }));
+                return Promise.all(people.map(function (person) {
+                    return me.exec(prepared(person.name, person.age));
+                }));
+            })
         });
         
     });
@@ -78,54 +81,35 @@ describe('DBH', function() {
     describe('#conn', function() {
         
         it('create connection', function() {
-            return db.conn();
-        });
-        
-        it('exec "select count(age) from person" whith DBH.count', function() {
-            return db.conn()
-                .then(DBH.count('person'))
-                .then(function(count) {
-                    assert.equal(count, 26);
-                });
-        });
-        
-        it('exec "select count(age) from person" whith this.count', function() {
-            return db.conn().then(function() {
-                return this.count('person');
-            }).then(function(count) {
-                assert.equal(count, 26);
+            return using(db.conn(), function (conn) {
+                return true;
             });
         });
         
-        it('exec "select count(age) from person" whith DBH.exec', function() {
-            return db.conn().then(DBH.exec(
-                'select count(age) from person'
-            )).then(function(result) {
-                assert.equal(result.rows[0].count, 26);
+        it('exec "select count(age) from person" whith conn.exec', function() {
+            return using(db.conn(), function (conn) {
+                return conn.exec('select count(age) from person')
+                    .then(function (result) {
+                        assert.equal(result.rows[0].count, 26);
+                    });
             });
         });
         
-        it('exec "select count(age) from person" whith this.exec', function() {
-            return db.conn().then(function() {
-                return this.exec('select count(age) from person')
-            }).then(function(result) {
-                assert.equal(result.rows[0].count, 26);
+        it('exec "select count(age) from person" whith conn.count', function() {
+            return using(db.conn(), function (conn) {
+                return conn.count('person')
+                    .then(function (count) {
+                        assert.equal(count, 26);
+                    });
             });
         });
         
-        it('exec "select count(age) from person" whith DBH.fetchScalar', function() {
-            return db.conn().then(DBH.fetchScalar(
-                'select count(age) from person'
-            )).then(function(count) {
-                assert.equal(count, 26);
-            });
-        });
-        
-        it('exec "select count(age) from person" whith this.fetchScalar', function() {
-            return db.conn().then(function() {
-                return this.fetchScalar('select count(age) from person')
-            }).then(function(count) {
-                assert.equal(count, 26);
+        it('exec "select count(age) from person" whith conn.fetchScalar', function() {
+            return using(db.conn(), function (conn) {
+                return conn.fetchScalar('select count(age) from person')
+                    .then(function (count) {
+                        assert.equal(count, 26);
+                    });
             });
         });
         
