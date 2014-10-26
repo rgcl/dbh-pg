@@ -111,4 +111,56 @@ describe('DBH', function() {
         
     });
     
+    describe('transactions', function () {
+
+        it('without commit', function() {
+            var oldName = 'Old Name',
+                newName = 'New Name',
+                query = 'select name from person where id=1';
+            return using(db.conn(), function (conn) {
+                return conn.update('person', { name: oldName }, { id : 1})
+                    .then(DBH.fetchScalar(query))
+                    .then(function (name) {
+                        assert.equals(name, oldName);
+                    })
+                    .then(DBH.begin) // start transaction
+                    .then(DBH.update('person', { name: newName }, { id: 1 }));
+                // because not commit is here, then auto rollback must be called
+            }).then(function () {
+                return using(db.conn(), function (conn) {
+                    return conn.fetchScalar(query)
+                        .then(function (name) {
+                            assert.equals(oldName, name);
+                            assert.notEqual(name, newName);
+                        });
+                });
+            });
+        });
+        
+        it('with commit', function() {
+            var oldName = 'Old Name',
+                newName = 'New Name',
+                query = 'select name from person where id=1';
+            return using(db.conn(), function (conn) {
+                return conn.update('person', { name: oldName }, { id : 1})
+                    .then(DBH.fetchScalar(query))
+                    .then(function (name) {
+                        assert.equals(name, oldName);
+                    })
+                    .then(DBH.begin) // start transaction
+                    .then(DBH.update('person', { name: newName }, { id: 1 }));
+                    .then(DBH.commit);
+            }).then(function () {
+                return using(db.conn(), function (conn) {
+                    return conn.fetchScalar(query)
+                        .then(function (name) {
+                            assert.notEquals(oldName, name);
+                            assert.equal(name, newName);
+                        });
+                });
+            });
+        });
+
+    })
+    
 });
