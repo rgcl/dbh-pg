@@ -1,6 +1,6 @@
 {
   "name": "dbh-pg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "dbh-pg",
   "main": "lib/DBH.js",
   "scripts": {
