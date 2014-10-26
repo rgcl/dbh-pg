@@ -113,16 +113,14 @@ using(db.conn(), function (conn) {
 
 ```javascript
 // DBH.prepare recibe a SQL and return function that recibe the
-// replacement as object.
+// replacement as array or params.
 // Note that DBH.prepare can be used outside the 'using'.
-var prepared = DBH.prepare('select name from city where country_code=$code');
+var prepared = DBH.prepare('select name from city where country_code=$1');
 
 using(db.conn(), function (conn) {
     var me = this;
     ['ar', 'cl', 'jp', 'pe', 'col'].forEach(function (code) {
-        me.exec(prepared({
-            code : code
-        }));
+        me.exec(prepared(code));
     })
 });
 ```
