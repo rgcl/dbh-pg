@@ -121,7 +121,7 @@ describe('DBH', function() {
                 return conn.update('person', { name: oldName }, { id : 1})
                     .then(DBH.fetchScalar(query))
                     .then(function (name) {
-                        assert.equals(name, oldName);
+                        assert.equal(name, oldName);
                     })
                     .then(DBH.begin) // start transaction
                     .then(DBH.update('person', { name: newName }, { id: 1 }));
@@ -130,7 +130,7 @@ describe('DBH', function() {
                 return using(db.conn(), function (conn) {
                     return conn.fetchScalar(query)
                         .then(function (name) {
-                            assert.equals(oldName, name);
+                            assert.equal(oldName, name);
                             assert.notEqual(name, newName);
                         });
                 });
@@ -145,7 +145,7 @@ describe('DBH', function() {
                 return conn.update('person', { name: oldName }, { id : 1})
                     .then(DBH.fetchScalar(query))
                     .then(function (name) {
-                        assert.equals(name, oldName);
+                        assert.equal(name, oldName);
                     })
                     .then(DBH.begin) // start transaction
                     .then(DBH.update('person', { name: newName }, { id: 1 }))
@@ -154,7 +154,7 @@ describe('DBH', function() {
                 return using(db.conn(), function (conn) {
                     return conn.fetchScalar(query)
                         .then(function (name) {
-                            assert.notEquals(oldName, name);
+                            assert.notEqual(oldName, name);
                             assert.equal(name, newName);
                         });
                 });
