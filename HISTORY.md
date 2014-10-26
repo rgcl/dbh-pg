@@ -1,3 +1,8 @@
+# 1.0.1 2014-10-26
+
+* Uncommited transaction now generate automatic rollback
+* Add tests about transactions
+
 # 1.0.0 2014-10-24
 
 * Now ``Promise.using`` of ``bluebird`` npm module is used for release the connection to the poll.
