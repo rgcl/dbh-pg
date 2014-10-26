@@ -57,9 +57,9 @@ describe('DBH', function() {
                 )'
             ).then(function () {
                 var me = this,
-                prepared = DBH.prepare('insert into person(name, age) values ($name, $age)');
+                prepared = DBH.prepare('insert into person(name, age) values ($1, $2)');
                 return Promise.all(people.map(function (person) {
-                    return me.exec(prepared(person));
+                    return me.exec(prepared([person.name, person.age]));
                 }));
             })
         });
