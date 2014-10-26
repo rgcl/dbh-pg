@@ -114,17 +114,18 @@ describe('DBH', function() {
     describe('transactions', function () {
 
         it('without commit', function() {
-            var oldName = 'Old Name',
+            var id = 1,
+                oldName = 'Old Name',
                 newName = 'New Name',
-                query = 'select name from person where id=1';
+                query = 'select name from person where id=' + id;
             return using(db.conn(), function (conn) {
-                return conn.update('person', { name: oldName }, { id : 1})
+                return conn.update('person', { name: oldName }, { id : id })
                     .then(DBH.fetchScalar(query))
                     .then(function (name) {
                         assert.equal(name, oldName);
                     })
                     .then(DBH.begin) // start transaction
-                    .then(DBH.update('person', { name: newName }, { id: 1 }));
+                    .then(DBH.update('person', { name: newName }, { id: id }));
                 // because not commit is here, then auto rollback must be called
             }).then(function () {
                 return using(db.conn(), function (conn) {
@@ -138,17 +139,18 @@ describe('DBH', function() {
         });
         
         it('with commit', function() {
-            var oldName = 'Old Name',
+            var id = 2,
+                oldName = 'Old Name',
                 newName = 'New Name',
-                query = 'select name from person where id=1';
+                query = 'select name from person where id=' + id;
             return using(db.conn(), function (conn) {
-                return conn.update('person', { name: oldName }, { id : 1})
+                return conn.update('person', { name: oldName }, { id : id })
                     .then(DBH.fetchScalar(query))
                     .then(function (name) {
                         assert.equal(name, oldName);
                     })
                     .then(DBH.begin) // start transaction
-                    .then(DBH.update('person', { name: newName }, { id: 1 }))
+                    .then(DBH.update('person', { name: newName }, { id: id }))
                     .then(DBH.commit);
             }).then(function () {
                 return using(db.conn(), function (conn) {
