@@ -1,4 +1,7 @@
-# DBH-PG
+
+#![BDH-PG](logo.png?raw=true)
+
+
 
 [![NPM version](https://badge.fury.io/js/dbh-pg.png)](http://badge.fury.io/js/dbh-pg)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
