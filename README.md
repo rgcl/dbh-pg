@@ -1,9 +1,9 @@
 
+
 #![BDH-PG](logo.png?raw=true)
 
+[![NPM](https://nodei.co/npm/dbh-pg.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/dbh-pg/)
 
-
-[![NPM version](https://badge.fury.io/js/dbh-pg.png)](http://badge.fury.io/js/dbh-pg)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
 
 Database Handler for PostgreSQL writer upon [pg](https://github.com/brianc/node-postgres) and [bluebird](https://github.com/petkaantonov/bluebird).
