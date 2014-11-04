@@ -1,6 +1,7 @@
-<h1>
-<img align="center" alt="BDH-PG logo" src="logo.png?raw=true" title="BDH-PG">
-</h1>
+
+#![BDH-PG](logo.png?raw=true)
+
+
 
 [![NPM version](https://badge.fury.io/js/dbh-pg.png)](http://badge.fury.io/js/dbh-pg)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
