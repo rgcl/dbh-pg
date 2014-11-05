@@ -21,13 +21,13 @@ var DBH = require('dbh-pg'),
 var db = new DBH('postgres://postgres@localhost/db2test');
 
 using(db.conn(), function (conn) {
-    // a connection from the poll
+    // a connection from the pool
     conn
     .fetchOne('select * from user where id=$1', [10])
     .then(function (user) {
         console.log(user); // {id:10, name:...}
     });
-}); // automatic release the connection to poll
+}); // automatic release the connection to pool
 ```
 
 ### Transactions
@@ -38,7 +38,7 @@ using(db.conn(), function (conn) {
     conn
     .begin() // start transaction
     .then(function () {
-        // 'this' point to the created connection 'conn'
+        // 'this' points to the created connection 'conn'
         return this.exec(
             'update wallet \
             set coins = coins - 10 \
@@ -101,7 +101,7 @@ using(db.conn(), function (conn) {
 
 ```javascript
 // This is the first example, note that
-// instead $1, uses $id
+// instead of $1 this uses $id
 using(db.conn(), function (conn) {
     conn
     .fetchOne('select * from user where id=$id', {
@@ -116,8 +116,8 @@ using(db.conn(), function (conn) {
 ## Prepared Statements
 
 ```javascript
-// DBH.prepare recibe a SQL and return function that recibe the
-// replacement as array or params.
+// DBH.prepare receives a SQL statement and return function that receives the
+// replacement as an array of params.
 // Note that DBH.prepare can be used outside the 'using'.
 var prepared = DBH.prepare('select name from city where country_code=$1');
 
@@ -132,14 +132,14 @@ using(db.conn(), function (conn) {
 ## Complex example
 
 ```javascript
-// limit the amount of users to 1000 and send an email
+// limit the number of users to 1000 and send an email
 // notifying affected users in a transaction.
-var DBH = require('dbh-ph'),
-    Promise = require('Promise'),
+var DBH = require('dbh-pg'),
+    Promise = require('bluebird'),
     using = Promise.using,
     db = new DBH('postgres://postgres@localhost/db2test');
     
-var nodemailer = require('nodemailer'), // no included, used for this example only
+var nodemailer = require('nodemailer'), // not included, used for this example only
     transporter = nodemailer.createTransport(),
     sendMail = Promise.promisify(transporter.sendMail);
     
