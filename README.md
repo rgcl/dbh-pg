@@ -134,7 +134,7 @@ using(db.conn(), function (conn) {
 ```javascript
 // limit the number of users to 1000 and send an email
 // notifying affected users in a transaction.
-var DBH = require('dbh-ph'),
+var DBH = require('dbh-pg'),
     Promise = require('Promise'),
     using = Promise.using,
     db = new DBH('postgres://postgres@localhost/db2test');
