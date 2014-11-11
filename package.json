@@ -1,23 +1,25 @@
 {
   "name": "dbh-pg",
-  "version": "1.0.1",
-  "description": "dbh-pg",
+  "version": "2.0.0",
+  "description": "Database Handler for PostgreSQL made to enjoy to work with SQL using promises",
   "main": "lib/DBH.js",
   "scripts": {
-    "test": "make test"
+    "test": "./node_modules/.bin/mocha test/*.js -R spec"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/sapienlab/dbh-pg"
   },
   "keywords": [
-    "then",
-    "promise",
-    "postgres",
     "pg",
     "database",
     "db",
-    "dbh"
+    "dbh",
+    "then",
+    "promise",
+    "postgres",
+    "PostgreSQL",
+    "transaction"
   ],
   "author": {
     "name": "Rodrigo González",
