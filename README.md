@@ -92,8 +92,7 @@ using(db.conn(), function (conn) {
         set coins = coins + 10 \
         where user_id=$1',
         [4]
-    )).then(DBH.commit);
-    // noted that is DBH.commit, not DBH.commit()
+    )).then(DBH.commit());
 });
 ```
 

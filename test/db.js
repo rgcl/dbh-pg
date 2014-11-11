@@ -124,7 +124,7 @@ describe('DBH', function() {
                     .then(function (name) {
                         assert.equal(name, oldName);
                     })
-                    .then(DBH.begin) // start transaction
+                    .then(DBH.begin()) // start transaction
                     .then(DBH.update('person', { name: newName }, { id: id }));
                 // because not commit is here, then auto rollback must be called
             }).then(function () {
@@ -149,9 +149,9 @@ describe('DBH', function() {
                     .then(function (name) {
                         assert.equal(name, oldName);
                     })
-                    .then(DBH.begin) // start transaction
+                    .then(DBH.begin()) // start transaction
                     .then(DBH.update('person', { name: newName }, { id: id }))
-                    .then(DBH.commit);
+                    .then(DBH.commit());
             }).then(function () {
                 return using(db.conn(), function (conn) {
                     return conn.fetchScalar(query)
