@@ -7,6 +7,7 @@
 - [Concepts](#concepts)
   - [parametized query](#parametized-query)
   - [query object](#query-object)
+  - [sortRule object](#sortrule-object)
   - [promises](#promises)
   - [security](#security)
 - [Classes]()
@@ -55,7 +56,7 @@ in which ```$1``` and ```$2``` are placeholders that must be replaced with the r
 ```$1```, ```$2```, ```...``` uses an array for replacement.
 > ```$1``` is for the 0-index position in the array.
 
-####Named placeholders
+#####Named placeholders
 ```$name```, ```$author_id```, etc. Uses an plain object for replacement.
 > Named placeholders have not natively support by PostgreSQL therefore are bypass by the library.
 
@@ -67,13 +68,22 @@ ___
 
 Is a plain object with these parameters:
 - ```optional string``` name: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
-- ```string``` text: The SQL command. Can be a [index parameterized](#index-placeholders) query.
+- ```string``` text: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
 - ```optional array``` values: An array of string values for replace in the ```text```. Default ```[]```.
 
 This object is used by the native [pg][] module.
 
 > *named query object* is a query object in that the ```name``` is not empy.
+
 ___
+
+###sortRule Object
+
+Is a plain object with these parameters:
+- ```string``` attr: The attribute name.
+- ```optional boolean``` asc: ```true``` is the sort is ascending, ```false``` is is descending. Default ```true```.
+
+This object is used in [```DBH.sqlOrderBy(array of sortRule)```](#dbh-sqlorderby-string).
 
 ###Security
 ___
@@ -85,31 +95,32 @@ ___
 ```var DBH = require('dbh-pg')```
 ___
 
-####DBH.prepare(```string``` query) -> Function
+####DBH.prepare(```string``` query) -> ```Function```
 
-Creates a function that return a named [query object](#query-object), 
+Creates a function that return a named [```query object```](#query-object), 
 useful for use Prepared Statements.
 
 #####Parameters:
-* ```string``` query: An [index parameterized](#index-placeholders) query. 
+* ```string``` query: An [```index parameterized query```](#index-placeholders). 
 
 #####Returns:
-Function in which the parameters are the index placeholders and return a named [query object](#query-object).
+Function in which the parameters are the index placeholders and return a named [```query object```](#query-object).
 
 #####See:
 [pg docummentation about prepared statement](https://github.com/brianc/node-postgres/wiki/Client#queryobject-config-optional-function-callback--query)
 
 #####Examples:
+Creates a function getAccount(id, pass):
 ```javascript
-// creates a function getAccount(id, pass)
 var getAccount = DBH.prepare('select * from account where name=$1 and pass=$2')
-
-// calling the generated function return the named query object.
+```
+Calling the generated function return the named query object:
+```javascript
 getAccount('admin', 'admin123')
 -> { name: '...', text: 'select * from account where name=$1 and pass=$2', 
 values: ['admin', 'admin123'] }
 ```
-The function returned can be use in conn.exe(query) method:
+The function returned can be use with conn.exe(query) method:
 ```javascript
 using(dbh.conn(), function (conn) {
     return conn.exec( getAccount( 'mail@example.com', 'abc123') )
@@ -117,46 +128,50 @@ using(dbh.conn(), function (conn) {
 ```
 _____
 
-###DBH.sqlLimit(```int``` limit [ , ```int``` offset ])
+####DBH.sqlLimit(```int``` limit [ , ```int``` offset ]) -> ```string```
 Safe construction of sql ```limit``` string.
 
-####Examples
+#####Examples
 ```javascript
 DBH.sqlLimit(3, 4)
-// ' LIMIT 3 OFFSET 4 '
+-> ' LIMIT 3 OFFSET 4 '
 ```
 ```javascript
 DBH.sqlLimit(3)
-// ' LIMIT 3 '
+-> ' LIMIT 3 '
 ```
 
-###DBH.sqlLimit(```object``` ctx)
+####DBH.sqlLimit(```object``` ctx) -> ```string```
 Safe construction of sql ```limit``` string.
 
-The ctx parameter is an object that constains ```int``` .limit 
-and ```int``` .offset (optional) attributes.
+The ctx parameter is an object that contains ```int``` .limit 
+and ```optional int``` .offset attributes.
 
-####Examples
+#####Examples
 ```javascript
 DBH.sqlLimit({ limit: 3, offset: 4 })
 -> ' LIMIT 3 OFFSET 4 '
 ```
 ```javascript
 DBH.sqlLimit({ limit: 3 })
-// ' LIMIT 3 '
+-> ' LIMIT 3 '
 ```
 ```javascript
 DBH.sqlLimit({ })
-// ' '
+-> ' '
 ```
 _____
 
-###DBH.sqlOrderBy(```array``` sort)
+###DBH.sqlOrderBy(```array``` sort) -> ```string```
 Safe construction of sql ```oder by```.
 
-The sort parameter is an array of [```sortRule```]() objects.
+####Parameters:
+- ```array``` sort: an array of [```sortRule objects```](#sortrule-object).
 
-####Example
+####Returns:
+A ```ORDER BY``` SQL command part.
+
+####Examples:
 ```javascript
 DBH.sqlOrderBy([
     { attr: 'editorial', asc: true },
@@ -178,6 +193,21 @@ _____
 
 ###DBH.sqlOrderBy(```object``` ctx)
 Safe construction of sql ```oder by```.
+
+Call DBH.sqlOrderBy(```ctx.sort```).
+
+####Examples:
+```javascript```
+DBH.sqlOrderBy({ sort: [{ attr:'name' }] })
+-> ' ORDER BY name ASC '
+```
+```javascript```
+DBH.sqlOrderBy({  })
+-> '  '
+```
+
+> note that if ctx has not the sort property, then blank string is returned.
+
 _____
 
 ###DBH.\<shorthand\>(...)
