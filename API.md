@@ -12,28 +12,27 @@
   - [security](#security)
 - [Classes]()
   - [DBH](#dbh)
-    - [```object``` DBH.sanitize](#dbh-sanitize)
-    - [```object``` DBH.sql](#dbh-sanitize)
-    - [DBH.*\<shorthand\>*(...)](#dbh-shorthands)
-    - [DBH.*prepare*(```string``` query)](#dbh-prepare-string-query)
-    - [new DBH(```object``` settings)](#new-dbh-dbhsettings-settings)
-    - [new DBH(```require('pg')``` pg \[, ```options``` options\])](#new-dbh-pg-pg-options)
-    - [.conn(\[```object``` scope\])](#conn)
+    - [```object``` DBH.*sanitize*](#dbh-sanitize)
+    - [```object``` DBH.*sql*](#dbh-sql)
+    - [DBH.*\<shorthand\>*(...)  -> ```Function```](#dbh-shorthands)
+    - [DBH.*prepare*(```string``` query)  -> ```Function```](#dbh-prepare-string-query)
+    - [new DBH(```object``` settings \[ , ```object``` driver \])  -> ```DBH```](#new-dbh-dbhsettings-settings)
+    - [.conn(\[```object``` scope\]) -> ```Promise```](#conn)
   - [Connection](#connection)
-    - [.exec(```string``` sql \[ , ```object|array``` data \])]()
-    - [.exec(```object``` query)]()
-    - [.begin()]()
-    - [.commit()]()
-    - [.rollback()]()
-    - [.fetchOne(```string``` query \[ , ```object|array``` data \])]()
-    - [.fetchAll(```string``` query \[ , ```object|array``` data \])]()
-    - [.fetchColumn(```string``` query \[ , ```object|array``` data \])]()
-    - [.fetchScalar(```string``` query \[ , ```object|array``` data \])]()
+    - [.exec(```string``` sql \[ , ```object|array``` data \]) -> ```Promise```]()
+    - [.exec(```object``` query) -> ```Promise```]()
+    - [.fetchOne(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
+    - [.fetchAll(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
+    - [.fetchColumn(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
+    - [.fetchScalar(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
     - [.insert(```string``` table, ```object``` data)]()
-    - [.update(```string``` table, ```object``` data, ```object``` whereData)]()
-    - [.delete(```string``` table, ```object``` whereData)]()
-    - [.exists(```string``` table, ```object``` whereData)]()
-    - [.count(```string``` table, ```object``` whereData)]()
+    - [.update(```string``` table, ```object``` data, ```object``` whereData) -> ```Promise```]()
+    - [.delete(```string``` table, ```object``` whereData) -> ```Promise```]()
+    - [.exists(```string``` table, ```object``` whereData) -> ```Promise```]()
+    - [.count(```string``` table, ```object``` whereData) -> ```Promise```]()
+    - [.begin() -> ```Promise```]()
+    - [.commit() -> ```Promise```]()
+    - [.rollback() -> ```Promise```]()
 - [utils](#utils)
   - [sanitize](#sanitize)
     - [.escape(```string``` sql)]()
@@ -49,7 +48,6 @@
     - [.toIndexed(```object``` object, ```array``` refArray \[ , ```string``` separator \[ , ```string``` inSeparator \] \])]()
 
 ##Concepts
-___
 
 ###Parameterized Queries
 
@@ -88,6 +86,10 @@ Is a plain object with these parameters:
 - ```optional boolean``` asc: ```true``` is the sort is ascending, ```false``` is is descending. Default ```true```.
 
 This object is used in [```DBH.sqlOrderBy(array of sortRule)```](#dbh-sqlorderby-string).
+
+###Promises
+
+___
 
 ###Security
 ___
@@ -132,90 +134,52 @@ using(dbh.conn(), function (conn) {
 ```
 _____
 
-####DBH.sqlLimit(```int``` limit [ , ```int``` offset ]) -> ```string```
-Safe construction of sql ```limit``` string.
+###```object``` DBH.*sanitize*
+Proxy to [```sanitize```](#sanitize).
+###```object``` DBH.*sql*
+Proxy to [```sql```](#sql).
+___
 
-#####Examples
+###DBH.```{shorthand}```(```{args}```) -> ```Function```
+
+The DBH shorthands are utilities functions for the [```Connection```](#connection)
+methods.
+
+Each shorthands returns a function that can be used as [```fulfilledHandler```](https://github.com/petkaantonov/bluebird/blob/master/API.md#thenfunction-fulfilledhandler--function-rejectedhandler----promise) in a promise.
+
 ```javascript
-DBH.sqlLimit(3, 4)
--> ' LIMIT 3 OFFSET 4 '
+DBH.{shorthand}({args})
+-> function () {  return this.{shorthand}({args}) }
 ```
-```javascript
-DBH.sqlLimit(3)
--> ' LIMIT 3 '
-```
-
-####DBH.sqlLimit(```object``` ctx) -> ```string```
-Safe construction of sql ```limit``` string.
-
-The ctx parameter is an object that contains ```int``` .limit 
-and ```optional int``` .offset attributes.
-
-#####Examples
-```javascript
-DBH.sqlLimit({ limit: 3, offset: 4 })
--> ' LIMIT 3 OFFSET 4 '
-```
-```javascript
-DBH.sqlLimit({ limit: 3 })
--> ' LIMIT 3 '
-```
-```javascript
-DBH.sqlLimit({ })
--> ' '
-```
-_____
-
-###DBH.sqlOrderBy(```array``` sort) -> ```string```
-Safe construction of sql ```oder by```.
-
-####Parameters:
-- ```array``` sort: an array of [```sortRule objects```](#sortrule-object).
-
-####Returns:
-A ```ORDER BY``` SQL command part.
-
 ####Examples:
+**With shorthand (count)***
 ```javascript
-DBH.sqlOrderBy([
-    { attr: 'editorial', asc: true },
-    { attr: 'name', asc: false }
-])
-// ' ORDER BY editorial ASC, name DESC '
+using(dbh.conn(), function (conn) {
+    return conn
+        .insert('animal', { name: 'Cenala', type: 'cat' })
+        .then(DBH.count('animals')) // shorthand count
+})
 ```
+***Without shorthand***
 ```javascript
-DBH.sqlOrderBy([
-    { attr: 'name' }
-])
--> ' ORDER BY editorial ASC '
+using(dbh.conn(), function (conn) {
+    return conn
+        .insert('animal', { name: 'Cenala', type: 'cat' })
+        .then(function () {
+            return this.count('animals')
+        })
+})
 ```
-```javascript
-DBH.sqlLimit({ })
-// ' '
-```
-_____
+####DBH.exec({args})
+Shorthand for .exec({args})
 
-###DBH.sqlOrderBy(```object``` ctx)
-Safe construction of sql ```oder by```.
+Shorthand to [```conn.exec(...)```]()
 
-Call DBH.sqlOrderBy(```ctx.sort```).
+| DBH.* | Shorthand to: | 
+|-------|---------------|
+|.exec  |conn.
+|
 
-####Examples:
-```javascript```
-DBH.sqlOrderBy({ sort: [{ attr:'name' }] })
--> ' ORDER BY name ASC '
-```
-```javascript```
-DBH.sqlOrderBy({  })
--> '  '
-```
-
-> note that if ctx has not the sort property, then blank string is returned.
-
-_____
-
-###DBH.\<shorthand\>(...)
-Multiples shorthands for conn.*
 _____
 
 ###DBH.sanitize
@@ -299,5 +263,105 @@ conn
     // { rows: [{item1}, ...], count: 1,  }
 })
 ```
+___
 
-pg: https://www.npmjs.org/package/pg
+##utils
+
+###sql
+Utils to create SQL chunks.
+
+Can be required directed:
+```javascript
+var sql = require('dbh-ph/lib/sql')
+```
+or with DBH:
+```javascript
+var DBH = require('dbh-pg'),
+    sql = DBH.sql
+```
+
+####.limit(```int``` limit [ , ```int``` offset ]) -> ```string```
+Safe construction of SQL ```limit``` string.
+
+#####Examples:
+```javascript
+sql.limit(3, 4)
+-> ' LIMIT 3 OFFSET 4 '
+```
+```javascript
+sql.limit(3)
+-> ' LIMIT 3 '
+```
+
+####.limit(```object``` ctx) -> ```string```
+Safe construction of SQL ```limit``` string.
+
+The ctx parameter is an object that contains ```int``` .limit 
+and ```optional int``` .offset attributes.
+
+#####Examples:
+```javascript
+sql.limit({ limit: 3, offset: 4 })
+-> ' LIMIT 3 OFFSET 4 '
+```
+```javascript
+sql.limit({ limit: 3 })
+-> ' LIMIT 3 '
+```
+```javascript
+sql.limit({ })
+-> ' '
+```
+_____
+
+###.orderBy(```array``` sort) -> ```string```
+Safe construction of SQL ```oder by``` string.
+
+####Parameters:
+- ```array``` sort: an array of [```sortRule objects```](#sortrule-object).
+
+####Returns:
+A ```ORDER BY``` SQL command part.
+
+####Examples:
+```javascript
+sql.orderBy([
+    { attr: 'editorial', asc: true },
+    { attr: 'name', asc: false }
+])
+// ' ORDER BY editorial ASC, name DESC '
+```
+```javascript
+sql.orderBy([
+    { attr: 'name' }
+])
+-> ' ORDER BY editorial ASC '
+```
+```javascript
+DBH.sqlLimit({ })
+// ' '
+```
+_____
+
+###.orderBy(```object``` ctx)
+Safe construction of sql ```oder by```.
+
+Proxy to:
+```javascript
+sql.orderBy(ctx.orderBy || ctx.sort || {})
+```
+
+#####Examples:
+```javascript```
+sql.orderBy({ sort: [{ attr:'name' }] })
+-> ' ORDER BY name ASC '
+```
+```javascript```
+sql.orderBy({  })
+-> '  '
+```
+
+> note that if ctx has not the sort property, then blank string is returned.
+
+
+[pg]: https://www.npmjs.org/package/pg
