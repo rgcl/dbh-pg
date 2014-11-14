@@ -189,15 +189,15 @@ using(dbh.conn(), function (conn) {
 
 _____
 
-###new DBH(```string``` conextionString [ , ```object``` driver ]) -> ```DBH```
+###```new DBH(string conextionString [ , object driver ]) -> DBH```
 Instantiates the database handler.
 
-- ```string``` **conextionString**
+- *string* **conextionString**
   - a connection string in the format anything://user:password@host:port/database
   - a socket path, like /var/run/postgresql
   - a socket path, with a specific database, like /var/run/postgresql a_db_name
   - a socket connection string socket:/some/path/?db=database_name&encoding=utf8
-- ```object``` **driver**
+- *optional object* **driver**
   - The result of call ```require('pg')```.
 
 _____
