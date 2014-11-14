@@ -14,12 +14,12 @@
   - [DBH](#dbh)
     - [```object``` DBH.*sanitize*](#dbh-sanitize)
     - [```object``` DBH.*sql*](#dbh-sql)
-    - [DBH.*\<shorthand\>*(...)  -> ```Function```](#dbh-shorthands)
-    - [DBH.*prepare*(```string``` query)  -> ```Function```](#dbh-prepare-string-query)
-    - [new DBH(```object``` settings \[ , ```object``` driver \])  -> ```DBH```](#new-dbh-dbhsettings-settings)
-    - [.conn(\[```object``` scope\]) -> ```Promise```](#conn)
+    - [DBH.*\<shorthand\>*(...)  -> ```Function```](#dbh-shorthands-function)
+    - [DBH.*prepare*(```string``` query)  -> ```Function```](#dbh-prepare-string-query-function)
+    - [new DBH(```object``` settings \[ , ```object``` driver \])  -> ```DBH```](#new-dbh-object-settings-object-driver-dbh)
+    - [.conn(\[```object``` scope\]) -> ```Promise```](#conn-object-scope-promise)
   - [Connection](#connection)
-    - [.exec(```string``` sql \[ , ```object|array``` data \]) -> ```Promise```]()
+    - [.exec(```string``` sql \[ , ```object|array``` data \]) -> ```Promise```](#exec-string-sql-objectarray-data-promise)
     - [.exec(```object``` query) -> ```Promise```]()
     - [.fetchOne(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
     - [.fetchAll(```string``` query \[ , ```object|array``` data \]) -> ```Promise```]()
@@ -152,7 +152,7 @@ DBH.{shorthand}({args})
 -> function () {  return this.{shorthand}({args}) }
 ```
 ####Examples:
-**With shorthand (count)***
+**With shorthand (count)**
 ```javascript
 using(dbh.conn(), function (conn) {
     return conn
@@ -160,7 +160,7 @@ using(dbh.conn(), function (conn) {
         .then(DBH.count('animals')) // shorthand count
 })
 ```
-***Without shorthand***
+**Without shorthand**
 ```javascript
 using(dbh.conn(), function (conn) {
     return conn
@@ -170,28 +170,42 @@ using(dbh.conn(), function (conn) {
         })
 })
 ```
-####DBH.exec({args})
-Shorthand for .exec({args})
-
-Shorthand to [```conn.exec(...)```]()
-
-| DBH.* | Shorthand to: | 
-|-------|---------------|
-|.exec  |conn.
-|
+####All Shorthands
+| DBH              | Shorthand to... |
+|------------------|-----------------|
+| DBH.*exec*       | [.exec]()
+| DBH.*fetchOne*   | [.fetchOne]()
+| DBH.*fetchAll*   | [.fetchAll]()
+| DBH.*fetchColumn*| [.fetchColumn]()
+| DBH.*fetchScalar*| [.fetchScalar]()
+| DBH.*insert*     | [.insert]()
+| DBH.*update*     | [.update]()
+| DBH.*delete*     | [.delete]()
+| DBH.*count*      | [.count]()
+| DBH.*begin*      | [.begin]()
+| DBH.*commit*     | [.commit]()
+| DBH.*rollback*   | [.rollback]()
+| DBH.*done*       | [.done]()
 
 _____
 
-###DBH.sanitize
-Proxy to [sanitize]().
-_____
-
-###new DBH(```object``` settings)
+###new DBH(```string``` conextionString [ , ```object``` driver ]) -> ```DBH```
 Instantiates the database handler.
+
+- ```string``` **conextionString**
+  - a connection string in the format anything://user:password@host:port/database
+  - a socket path, like /var/run/postgresql
+  - a socket path, with a specific database, like /var/run/postgresql a_db_name
+  - a socket connection string socket:/some/path/?db=database_name&encoding=utf8
+- ```object``` **driver**
+  - The result of call ```require('pg')```.
+
 _____
 
-###new DBH(```require('pg')``` pg, ```object``` options)
+###new DBH(```object``` settings [ , ```object``` driver ]) -> ```DBH```
 Instantiates the database handler.
+
+- ```object``` **setting** - An object with these properties:
 _____
 
 ###.conn([ ```object``` scope ])
