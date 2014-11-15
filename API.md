@@ -25,7 +25,7 @@
     - [```.fetchAll(string query [ , object|array data ]) -> Promise```]()
     - [```.fetchColumn(string query [ , object|array data ]) -> Promise```]()
     - [```.fetchScalar(string query [ , object|array data ]) -> Promise```]()
-    - [```.insert(string table, object data)]()
+    - [```.insert(string table, object data) -> Promise```]()
     - [```.update(string table, object data, object whereData) -> Promise```]()
     - [```.delete(string table, object whereData) -> Promise```]()
     - [```.exists(string table, object whereData) -> Promise```]()
@@ -283,7 +283,7 @@ The best way to do this is using [```Promise.using```](https://github.com/petkaa
 therefore the ```conn.done``` is called automatically.
 
 ####Examples:
-#####Simple:
+#####Base:
 ```javascript
 // note that "using" is for "Promise.using"
 var DBH = require('dbh-pg'),
@@ -318,11 +318,13 @@ _____
 ##Connection
 _____
 
-###```.exec(string query) -> Promise```
+###```.exec(string query [ , object|array data ]) -> Promise```
 Send the given SQL query to the database.
 
 - *string* **query**:
   - the SQL command to send to the database
+- *optional object|array* **data**:
+  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
 
 Returns a object with this parameters:
 - *string* **command**:
@@ -335,9 +337,28 @@ Returns a object with this parameters:
   - an array of rows
 
 ####Example:
+#####Simple Query:
 ```javascript
 conn
-.exec('select * from book')
+.exec('select * from book where price <= 20.0')
+.then(function (resultset) {
+    console.log(resultset)
+    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+})
+```
+#####[Indexed Parameterized Query]()
+```javascript
+conn
+.exec('select * from book where price <= $1', [20.0])
+.then(function (resultset) {
+    console.log(resultset)
+    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+})
+```
+#####[Named Parameterized Query]()
+```javascript
+conn
+.exec('select * from book where price <= $price', { price: 20.0 })
 .then(function (resultset) {
     console.log(resultset)
     // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
@@ -345,37 +366,10 @@ conn
 ```
 _____
 
-###conn.exec(```string``` sql, ```object``` data)
-
-Execute the sql with the given data.
-
-```javascript
-conn
-.exec('select * from book where author_id=$autor_id', { author_id : 32 })
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], count: 1,  }
-})
-```
-_____
-
-###conn.exec(/*string*/ sql, /*array*/ data)
-
-Execute the sql with the given data.
-
-```javascript
-conn
-.exec('select * from book where author_id=$1', [ 32 ])
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], count: 1,  }
-})
-```
-_____
-
-###conn.exec(/*Query*/ query)
-
+###```conn.exec(object query) -> Promise```
 Execute the query.
+
+> **See:** [query object]()
 
 ```javascript
 conn
@@ -390,6 +384,267 @@ conn
 ```
 ___
 
+###`.fetchOne(string query [ , object|array data ]) -> Promise`
+Shortcut to `result.rows[0]` of [`.exec`]()
+
+- *string* **query**:
+  - the SQL command to send to the database
+- *optional object|array* **data**:
+  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+
+Returns the first tupla as ```object```.
+
+####Example
+#####With `.fetchOne`
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.fetchOne(
+    'select * from planet where habitants > $1 limit 1'
+    , [3000]
+  )
+  .then(function (planet) {
+    console.log(planet)
+    // { name: 'Kolobo', habitants:... }
+  })
+})
+```
+#####Without `.fetchOne`
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.exec(
+    'select * from planet where habitants > $1 limit 1'
+    , [3000]
+  )
+  .then(function (result) {
+    return result.rows[0]
+  })
+  .then(function (planet) {
+    console.log(planet)
+    // { name: 'Kolobo', habitants:... }
+  })
+})
+```
+
+> **tip:** Use `LIMIT 1` in the SQL. `.fetchOne` not add this for you.
+
+___
+
+###`.fetchAll(string query [ , object|array data ]) -> Promise`
+Shortcut to `result.rows` of [`.exec`]()
+
+- *string* **query**:
+  - the SQL command to send to the database
+- *optional object|array* **data**:
+  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+
+Returns an array of tuplas.
+
+####Example
+#####With `.fetchAll`
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.fetchAll('select * from planet where habitants > $1', [3000])
+    .then(function (planets) {
+      console.log(planets)
+      // [{ name: 'Kolobo', habitants:... }, ...]
+    })
+})
+```
+#####Without `.fetchAll`
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.exec('select * from planet where habitants > $1', [3000])
+    .then(function (result) {
+      return result.rows
+    })
+    .then(function (planets) {
+      console.log(planets)
+      // [{ name: 'Kolobo', habitants:... }, ...]
+    })
+})
+```
+___
+###`.fetchColumn(string query [ , object|array data, [ string columnName ] ]) -> Promise`
+
+- *string* **query**:
+  - the SQL command to send to the database
+- *optional object|array* **data**:
+  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+- *optional string* **columnName**
+  - default: the first key in `Object.keys(result.row[0])`
+  - The name of the column to return.
+
+In this query:
+```sql
+SELECT name FROM account
+```
+The `result.rows` is:
+```
+[{ name: 'Name1'}, { name: 'Name2' }, { name: 'Name3' }, ...]
+```
+Instead, fetchColumn returns
+```
+[ 'Name1', 'Name2', 'Name3', ...]
+```
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.fetchColumn('select name from planet where habitants > $1', [3000])
+    .then(function (planets) {
+      console.log(planets)
+      // [ 'Kolobo', 'Saturn', 'Ponnyland' ]
+    })
+})
+```
+___
+###`.fetchScalar(string query [ , object|array data, [ string columnName ] ]) -> Promise`
+Shortcut to `result.rows[0][columnName]` of [`.exec`]()
+
+- *string* **query**:
+  - the SQL command to send to the database
+- *optional object|array* **data**:
+  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+- *optional string* **columnName**
+  - default: the first key in `Object.keys(result.row[0])`
+  - The name of the column to return.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.fetchScalar('select name from planet where habitants > $1 limit 1', [3000])
+    .then(function (name) {
+      console.log(name)
+      // 'Kolobo'
+    })
+})
+```
+___
+###`.insert(string table, object row [ , string returning ]) -> Promise`
+Insert the `row` in the `table`.
+
+- *string* **table**:
+  - the name of the table in the database.
+- *object* **row**:
+  - Te row to insert.
+- *optional string* **returning**
+  - default: undefined
+  - the data to return. Useful for know autogenerated values.
+  - is comma separated for each column name, e.g. `*` or, `name,birthday`.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.insert('planet', { name: 'Mart', habitants: 343 }, 'id')
+    .then(function (id) {
+      console.log(id)
+      // 435
+    })
+})
+```
+___
+###`.update(string table, object data, object where [ , string returning ]) -> Promise`
+Update the `table` with the `data` where match `where`.
+
+- *string* **table**:
+  - the name of the table in the database.
+- *object* **data**:
+  - the data to update.
+- *object* **when**
+  - the values to match for updating. e.g. `{ id: 3 }`
+- *optional string* **returning**
+  - default: undefined
+  - the data to return. Useful for know autogenerated values.
+  - is comma separated for each column name, e.g. `*` or, `name,birthday`.
+
+If `returning` is *undefined*, then return the number of affected rows, 
+otherwise an *array* with the affected rows.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.update(
+    'planet'
+    , { name: 'Mart', habitants: 0 }
+    , { id: 435 }
+  )
+})
+```
+___
+###`.delete(string table, object where [ , string returning ]) -> Promise`
+Update the `table` with the `data` where match `where`.
+
+- *string* **table**:
+  - the name of the table in the database.
+- *object* **data**:
+  - the data to update.
+- *object* **where**
+  - the values to match for updating. e.g. `{ id: 3 }`
+- *optional string* **returning**
+  - default: undefined
+  - the data to return. Useful for know autogenerated values.
+  - is comma separated for each column name, e.g. `*` or, `name,birthday`.
+
+If `returning` is *undefined*, then return the number of affected rows, 
+otherwise an *array* with the affected rows.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.update(
+    'planet'
+    , { name: 'Mart', habitants: 0 }
+    , { id: 435 }
+  )
+})
+```
+___
+###`.exists(string table, object where) -> Promise`
+Shortcut for the SQL:
+```sql
+SELECT EXIST (SELECT 1 FROM {table} where {where})
+```
+
+- *string* **table**:
+  - the name of the table in the database.
+- *object* **where**
+  - the values to match e.g. `{ id: 3 }`
+
+Return *boolean* `true` the item exitst, `false` otherwise.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.exists('planet', { id: 1234 })
+})
+.then(function (exists) {
+  console.log(exists)
+  // true or false
+})
+```
+___
+###`.count(string table [ , object where ]) -> Promise`
+Count the rows in the table
+
+- *string* **table**:
+  - the name of the table in the database.
+- *optional object* **where**
+  - default: `{}`
+  - the values to match to filter rows e.g. `{ id: 3 }`
+
+Return the number of item that match the `where` condition.
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn.count('planet') // count all planets
+})
+.then(function (count) {
+  console.log(count)
+  // 342
+})
+```
+___
 ##utils
 
 ###sql
