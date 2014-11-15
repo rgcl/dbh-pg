@@ -630,7 +630,7 @@ Count the rows in the table
   - the name of the table in the database.
 - *optional object* **where**
   - default: `{}`
-  - the values to match to filter rows e.g. `{ id: 3 }`
+  - the values to match to filter rows e.g. `{ color: 'red' }`
 
 Return the number of item that match the `where` condition.
 
@@ -644,6 +644,93 @@ using(dbh.conn(), function (conn) {
   // 342
 })
 ```
+___
+###`.begin() -> Promise`
+Start a transaction.
+
+If you not call [`.commit]() then the transaction is auto rollback by the library.
+
+> **See:** [Transactions in PostgreSQL](http://www.postgresql.org/docs/8.3/static/tutorial-transactions.html)
+
+####Example
+```javascript
+// send $10.00 from id=10 to id=11
+using(dbh.conn(), function (conn) {
+  conn
+  .begin() // start a transaction.
+  .then(DBH.exec(
+    'update wallet \
+    set balance=balance-10 where id=10'
+  ))
+  .then(DBH.exec(
+    'update wallet set \
+    balance=balance+10 where id=11'
+  ))
+  .then(DBH.commit())
+})
+```
+[`test`]() [`test autorollback`]()
+___
+
+###`.commit() -> Promise`
+Commit a transaction.
+
+Before you must to call [`.begin`]().
+If you not call [`.commit]() then the transaction is auto rollback by the library.
+
+> **See:** [Transactions in PostgreSQL](http://www.postgresql.org/docs/8.3/static/tutorial-transactions.html)
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn
+  .begin() // start a transaction.
+  .then(DBH.exec(
+    'update wallet \
+    set balance=balance-10 where id=10'
+  ))
+  .then(DBH.exec(
+    'update wallet set \
+    balance=balance+10 where id=11'
+  ))
+  .then(DBH.commit()) // commit the transaction
+})
+```
+[`test`]() [`test autorollback`]()
+___
+
+###`.rollback() -> Promise`
+Rollback a transaction.
+
+Before you must to call [`.begin`]().
+If you not call [`.commit]() then the transaction is auto rollback by the library.
+
+> **See:** [Transactions in PostgreSQL](http://www.postgresql.org/docs/8.3/static/tutorial-transactions.html)
+
+####Example
+```javascript
+using(dbh.conn(), function (conn) {
+  conn
+  .begin() // start a transaction.
+  .then(DBH.exec(
+    'update wallet \
+    set balance=balance-10 where id=10'
+  ))
+  .then(DBH.exec(
+    'update wallet set \
+    balance=balance+10 where id=11'
+  ))
+  .then(function () {
+    if (someCondition) {
+      return this.commit();
+    } else {
+      // roolback if someCondition is false
+      return this.rollback();
+    }
+  })
+})
+```
+[`test`]() [`test autorollback`]()
 ___
 ##utils
 
