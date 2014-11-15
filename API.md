@@ -21,7 +21,7 @@
   - [Connection](#connection)
     - [```.exec(string sql [ , object|array data ]) -> Promise```](#exec-string-sql-objectarray-data-promise)
     - [```.exec(object query) -> Promise```]()
-    - [```.fetchOne(string query [ , object|array data \]) -> Promise```]()
+    - [```.fetchOne(string query [ , object|array data ]) -> Promise```]()
     - [```.fetchAll(string query [ , object|array data ]) -> Promise```]()
     - [```.fetchColumn(string query [ , object|array data ]) -> Promise```]()
     - [```.fetchScalar(string query [ , object|array data ]) -> Promise```]()
@@ -40,26 +40,42 @@
     - [```.object(object object) -> object```]()
     - [```.sort(object sort) -> object```]()
   - [sql.js](#sql)
-    - [.limit(```int``` limit \[, ```int``` offset\])]()
-    - [.limit(```object``` ctx)]()
-    - [.orderBy(```array``` sort)]()
-    - [.orderBy(```object``` ctx)]()
-    - [.toNamed(```object``` object \[ , ```string``` separator \[ , ```string``` inSeparator \] \])]()
-    - [.toIndexed(```object``` object, ```array``` refArray \[ , ```string``` separator \[ , ```string``` inSeparator \] \])]()
+    - [```.limit(int limit [, int offset ]) -> string```]()
+    - [```.limit(object ctx) -> string```]()
+    - [```.orderBy(array sort) -> string```]()
+    - [```.orderBy(object ctx) -> string```]()
+    - [```.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string```]()
+    - [```.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string```]()
 
 ##Concepts
 
 ###Parameterized Queries
-
-Consists in a SQL command string as ```'insert into book (name, author_id) values ($1, $2) '```
+Consists in SQL commands string as ```'insert into book (name, author_id) values ($1, $2) '```
 in which ```$1``` and ```$2``` are placeholders that must be replaced with the real values by the library.
+
 ####Placeholders types
+
 #####Index placeholders
 ```$1```, ```$2```, ```...``` uses an array for replacement.
+######Example
+```javascript
+'select * from animals where type=$1 and stains > $2'
+```
+```javascript
+['cat', 3]
+```
 > ```$1``` is for the 0-index position in the array.
 
 #####Named placeholders
 ```$name```, ```$author_id```, etc. Uses an plain object for replacement.
+######Example
+```javascript
+'select * from animals where type=$type and stains > $stains'
+```
+```javascript
+{ type: 'cat', stains: 3 }
+```
+
 > Named placeholders have not natively support by PostgreSQL therefore are bypass by the library.
 
 ####why?
@@ -101,19 +117,16 @@ ___
 ```var DBH = require('dbh-pg')```
 ___
 
-####DBH.prepare(```string``` query) -> ```Function```
-
+####```DBH.prepare(string query) -> Function```
 Creates a function that return a named [```query object```](#query-object), 
 useful for use Prepared Statements.
 
-#####Parameters:
-* ```string``` query: An [```index parameterized query```](#index-placeholders). 
+- *string* **query**
+  - an [```index parameterized query```](#index-placeholders). 
 
-#####Returns:
-Function in which the parameters are the index placeholders and return a named [```query object```](#query-object).
+Returns a *function* in which the parameters are the index placeholders and return a named [```query object```](#query-object).
 
-#####See:
-[pg docummentation about prepared statement](https://github.com/brianc/node-postgres/wiki/Client#queryobject-config-optional-function-callback--query)
+> **See:** [pg docummentation about prepared statement](https://github.com/brianc/node-postgres/wiki/Client#queryobject-config-optional-function-callback--query)
 
 #####Examples:
 Creates a function getAccount(id, pass):
@@ -134,13 +147,13 @@ using(dbh.conn(), function (conn) {
 ```
 _____
 
-###```object``` DBH.*sanitize*
+####```object DBH.sanitize```
 Proxy to [```sanitize```](#sanitize).
-###```object``` DBH.*sql*
+####```object DBH.sql```
 Proxy to [```sql```](#sql).
 ___
 
-###DBH.```{shorthand}```(```{args}```) -> ```Function```
+####```DBH.{shorthand}({args}) -> Function```
 
 The DBH shorthands are utilities functions for the [```Connection```](#connection)
 methods.
@@ -151,7 +164,7 @@ Each shorthands returns a function that can be used as [```fulfilledHandler```](
 DBH.{shorthand}({args})
 -> function () {  return this.{shorthand}({args}) }
 ```
-####Examples:
+#####Examples:
 **With shorthand (count)**
 ```javascript
 using(dbh.conn(), function (conn) {
@@ -170,7 +183,7 @@ using(dbh.conn(), function (conn) {
         })
 })
 ```
-####All Shorthands
+#####All Shorthands
 | DBH              | Shorthand to... |
 |------------------|-----------------|
 | DBH.*exec*       | [.exec]()
@@ -189,39 +202,137 @@ using(dbh.conn(), function (conn) {
 
 _____
 
-###```new DBH(string conextionString [ , object driver ]) -> DBH```
+####```new DBH(string conextionString [ , object driver ]) -> DBH```
 Instantiates the database handler.
 
 - *string* **conextionString**
-  - a connection string in the format anything://user:password@host:port/database
-  - a socket path, like /var/run/postgresql
-  - a socket path, with a specific database, like /var/run/postgresql a_db_name
-  - a socket connection string socket:/some/path/?db=database_name&encoding=utf8
+  - a connection string in the format ```anything://user:password@host:port/database```
+  - a socket path, like ```/var/run/postgresql```
+  - a socket path, with a specific database, ```like /var/run/postgresql a_db_name```
+  - a socket connection string ```socket:/some/path/?db=database_name&encoding=utf8```
 - *optional object* **driver**
   - The result of call ```require('pg')```.
 
+DBH is a lightweight wrapper to [```pg```](https://github.com/brianc/node-postgres) module.
+This use a [pool of connections](https://github.com/brianc/node-postgres#client-pooling).
+
+#####Example:
+```javascript
+var dbh = new DBH('postgres://postgres@localhost/my_db')
+```
 _____
 
-###new DBH(```object``` settings [ , ```object``` driver ]) -> ```DBH```
+####```new DBH(object settings [ , object driver ]) -> DBH```
 Instantiates the database handler.
 
-- ```object``` **setting** - An object with these properties:
+- *object* **settings**:
+  - *optional string* **.user**:
+    - default value: `process.env.USER`
+    - PostgreSQL user
+  - *optional string* **.password**:
+    - default value: `null`
+    - user's password for PostgreSQL server
+  - *optional string* **.database**:
+    - default value: `process.env.USER`
+    - database to use when connecting to PostgreSQL server
+  - *optional int* **.port**:
+    - default value: `5432`
+    - port to use when connecting to PostgreSQL server
+  - *optional string* **.host**:
+    - default value: `null`
+    - host address of PostgreSQL server
+  - *optional bool* **.ssl**:
+    - default value: `false`
+    - whether to try SSL/TLS to connect to server
+- *optional object* **driver**
+  - The result of call ```require('pg')```.
+
+#####Example:
+```javascript
+var dbh = new DBH({
+  user: 'myuser',
+  password: 'mypass',
+  database: 'mydatabase'
+})
+```
 _____
 
-###.conn([ ```object``` scope ])
-Get a connection from the poll.
+###```.conn([ object scope ]) -> Promise```
+Get a connection from the pool.
+
+- *optional object* **scope**
+  - default value: ```{}```
+  - The value that is in ```.scope``` in ever promise callback.
+
+When you call ```dbh.conn()``` you get a promise that will be fulfilled when 
+a connection from the pool of connections is released.
+
+Is **extremely important** that the last promise call the [```.done```]() method.
+
+```javascript
+dbh.conn()
+    .exec(...)
+    .then(DBH.update(...))
+    .then(DBH.done, DBH.done) // Here we call the .done
+                              // then the connection is
+                              // release to the
+                              // connection pool
+```
+
+The best way to do this is using [```Promise.using```](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise),
+therefore the ```conn.done``` is called automatically.
+
+####Examples:
+#####Simple:
+```javascript
+// note that "using" is for "Promise.using"
+var DBH = require('dbh-pg'),
+    Promise = require('bluebird'),
+    using = Promise.using;
+
+using(dbh.conn(), function (conn) {
+    // here we have the conn (Connection) object
+    
+    // You can use the Connection methods, and
+    // EVER return the promise
+    return conn;
+    // or "return conn.exec(DBH.count('users'))", etc...
+})
+```
+#####Using scope:
+```javascript
+
+this.hi = 'hello'
+
+using(dbh.conn(this), function (conn) {
+    return conn.count('users')
+        .then(function () {
+            console.log(this.scope.hi)
+            // output: 'hello'
+        })
+})
+```
+
 _____
 
 ##Connection
 _____
 
-###conn.exec(```string``` sql)
-Send the given SQL command to the database.
+###```.exec(string query) -> Promise```
+Send the given SQL query to the database.
 
-####Returns:
-A object with this parameters:
-- ```array``` rows: An array of items returner from the database, each item is a plain key->value object.
-- ```int``` count: The number of the affected rows
+- *string* **query**:
+  - the SQL command to send to the database
+
+Returns a object with this parameters:
+- *string* **command**:
+  - The sql command that was executed (e.g. "SELECT", "UPDATE", etc.)
+- *int* **rowCount**:
+  - The number of rows affected by the SQL statement [(more information)](http://www.postgresql.org/docs/8.1/static/libpq-exec.html#LIBPQ-EXEC-NONSELECT)
+- **oid**:
+  - the oid returned
+- *array* **rows**:
+  - an array of rows
 
 ####Example:
 ```javascript
@@ -229,7 +340,7 @@ conn
 .exec('select * from book')
 .then(function (resultset) {
     console.log(resultset)
-    // { rows: [{item1}, ...], count: 1,  }
+    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 _____
