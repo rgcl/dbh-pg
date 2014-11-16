@@ -35,18 +35,18 @@
     - [`.commit() -> Promise`](#commit---promise)
     - [`.rollback() -> Promise`](#rollback---promise)
 - [utils](#utils)
-  - [sanitize.js](#sanitize)
-    - [```.escape(string sql) -> string```]()
-    - [```.array(array array) -> array```]()
-    - [```.object(object object) -> object```]()
-    - [```.sort(object sort) -> object```]()
-  - [sql.js](#sql)
-    - [```.limit(int limit [, int offset ]) -> string```]()
-    - [```.limit(object ctx) -> string```]()
-    - [```.orderBy(array sort) -> string```]()
-    - [```.orderBy(object ctx) -> string```]()
-    - [```.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string```]()
-    - [```.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string```]()
+  - [sanitize.js](#sanitizejs)
+    - [`.escape(string sql) -> string`](#escapestring-sql---string)
+    - [`.array(array array, object whitelist) -> array`](#arrayarray-array-object-whitelist---array)
+    - [`.object(object object, object whitelist) -> object`](#objectobject-object-object-whitelist---object)
+    - [`.sort(object sort, object whitelist) -> object`](#sortobject-sort-object-whitelist---object)
+  - [sql.js](#sqljs)
+    - [`.limit(int limit [, int offset ]) -> string`](#limitint-limit---int-offset----string)
+    - [`.limit(object ctx) -> string`](#limitobject-ctx---string)
+    - [`.orderBy(array sort) -> string`](#orderbyarray-sort---string)
+    - [`.orderBy(object ctx) -> string`](#orderbyobjectctx---string)
+    - [`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`]()
+    - [`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`]()
 
 ##Concepts
 
@@ -737,21 +737,32 @@ ___
 ##utils
 
 ###sanitize.js
+Utils to sanitize user inputs.
+
+Can be required directed:
+```javascript
+var sql = require('dbh-ph/lib/sanitize')
+```
+or with DBH:
+```javascript
+var DBH = require('dbh-pg'),
+    sanitize = DBH.sanitize
+```
 ___
 
 ####`.escape(string sql) -> string`
 TODO
 ___
 
-####`.array(array array) -> array
+####`.array(array array, object whitelist) -> array
 TODO
 ___
 
-####`.object(object object) -> object`
+####`.object(object object, object whitelist) -> object`
 TODO
 ___
 
-####`.sort(object sort) -> object`
+####`.sort(object sort, object whitelist) -> object`
 TODO
 ___
 ###sql.js
@@ -850,5 +861,10 @@ sql.orderBy({ sort: [{ attr:'name' }] })
 sql.orderBy({  })
 -> '  '
 ```
-
+___
+####`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`
+TODO
+___
+####`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`
+TODO
 [pg]: https://www.npmjs.org/package/pg
