@@ -734,7 +734,7 @@ using(dbh.conn(), function (conn) {
 ___
 ##utils
 
-###sql
+###sql.js
 Utils to create SQL chunks.
 
 Can be required directed:
@@ -746,9 +746,13 @@ or with DBH:
 var DBH = require('dbh-pg'),
     sql = DBH.sql
 ```
+___
 
-####.limit(```int``` limit [ , ```int``` offset ]) -> ```string```
-Safe construction of SQL ```limit``` string.
+####`.limit(int limit [ , int offset ]) -> string`
+Safe construction of SQL `limit` string.
+
+- *int* **limit*
+- *optional int* **offset**
 
 #####Examples:
 ```javascript
@@ -759,12 +763,14 @@ sql.limit(3, 4)
 sql.limit(3)
 -> ' LIMIT 3 '
 ```
+___
 
-####.limit(```object``` ctx) -> ```string```
-Safe construction of SQL ```limit``` string.
+####`.limit(object ctx) -> string`
+Safe construction of SQL `limit` string.
 
-The ctx parameter is an object that contains ```int``` .limit 
-and ```optional int``` .offset attributes.
+- *object* **ctx**:
+  - *optional int* **.limit*
+  - *optional int* **.offset**
 
 #####Examples:
 ```javascript
@@ -781,14 +787,11 @@ sql.limit({ })
 ```
 _____
 
-###.orderBy(```array``` sort) -> ```string```
-Safe construction of SQL ```oder by``` string.
+###`.orderBy(array sort) -> string`
+Safe construction of SQL `ORDER BY` string.
 
-####Parameters:
-- ```array``` sort: an array of [```sortRule objects```](#sortrule-object).
-
-####Returns:
-A ```ORDER BY``` SQL command part.
+- *array* **sort**:
+  - an array of [```sortRule objects```](#sortrule-object).
 
 ####Examples:
 ```javascript
@@ -796,7 +799,7 @@ sql.orderBy([
     { attr: 'editorial', asc: true },
     { attr: 'name', asc: false }
 ])
-// ' ORDER BY editorial ASC, name DESC '
+-> ' ORDER BY editorial ASC, name DESC '
 ```
 ```javascript
 sql.orderBy([
@@ -806,11 +809,11 @@ sql.orderBy([
 ```
 ```javascript
 DBH.sqlLimit({ })
-// ' '
+-> ' '
 ```
 _____
 
-###.orderBy(```object``` ctx)
+###`.orderBy(```object``` ctx) -> string`
 Safe construction of sql ```oder by```.
 
 Proxy to:
@@ -827,8 +830,5 @@ sql.orderBy({ sort: [{ attr:'name' }] })
 sql.orderBy({  })
 -> '  '
 ```
-
-> note that if ctx has not the sort property, then blank string is returned.
-
 
 [pg]: https://www.npmjs.org/package/pg
