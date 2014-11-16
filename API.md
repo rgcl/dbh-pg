@@ -5,34 +5,35 @@
 #API Reference
 
 - [Concepts](#concepts)
-  - [parametized query](#parametized-query)
+  - [parameterized query](#parameterized-queries)
   - [query object](#query-object)
   - [sortRule object](#sortrule-object)
   - [promises](#promises)
   - [security](#security)
-- [Classes]()
+- [Classes](#classes)
   - [DBH](#dbh)
-    - [```object DBH.sanitize```](#dbh-sanitize)
-    - [```object DBH.sql```](#dbh-sql)
-    - [```DBH.{shorthand}({args})  -> Function```](#dbh-shorthands-function)
-    - [```DBH.prepare(string query)  -> Function```](#dbh-prepare-string-query-function)
-    - [```new DBH(object settings [ , object driver ])  -> DBH```](#new-dbh-object-settings-object-driver-dbh)
-    - [```.conn([object scope]) -> Promise```](#conn-object-scope-promise)
+    - [`object DBH.sanitize`](#object-dbhsanitize)
+    - [`object DBH.sql`](#object-dbhsql)
+    - [`DBH.prepare(string query)  -> Function`](#dbhpreparestring-query---function)
+    - [`DBH.{shorthand}({args})  -> Function`](#dbhshorthandargs---function)
+    - [`new DBH(string conextionString [ , object driver ]) -> DBH`](#new-dbhstring-conextionstring---object-driver----dbh)
+    - [`new DBH(object settings [ , object driver ]) -> DBH`](#new-dbhobject-settings---object-driver----dbh)
+    - [`.conn([ object scope ]) -> Promise`](#conn-object-scope----promise)
   - [Connection](#connection)
-    - [```.exec(string sql [ , object|array data ]) -> Promise```](#exec-string-sql-objectarray-data-promise)
-    - [```.exec(object query) -> Promise```]()
-    - [```.fetchOne(string query [ , object|array data ]) -> Promise```]()
-    - [```.fetchAll(string query [ , object|array data ]) -> Promise```]()
-    - [```.fetchColumn(string query [ , object|array data ]) -> Promise```]()
-    - [```.fetchScalar(string query [ , object|array data ]) -> Promise```]()
-    - [```.insert(string table, object data) -> Promise```]()
-    - [```.update(string table, object data, object whereData) -> Promise```]()
-    - [```.delete(string table, object whereData) -> Promise```]()
-    - [```.exists(string table, object whereData) -> Promise```]()
-    - [```.count(string table, object whereData) -> Promise```]()
-    - [```.begin() -> Promise```]()
-    - [```.commit() -> Promise```]()
-    - [```.rollback() -> Promise```]()
+    - [`.exec(string query [ , object|array data ]) -> Promise`](#execstring-query---objectarray-data----promise)
+    - [`conn.exec(object query) -> Promise`](#connexecobject-query---promise)
+    - [`.fetchOne(string query [ , object|array data ]) -> Promise`](#fetchonestring-query---objectarray-data----promise)
+    - [`.fetchAll(string query [ , object|array data ]) -> Promise`](#fetchallstring-query---objectarray-data----promise)
+    - [`.fetchColumn(string query [ , object|array data, [ string columnName ] ]) -> Promise`](#fetchcolumnstring-query---objectarray-data--string-columnname-----promise)
+    - [`.fetchScalar(string query [ , object|array data, [ string columnName ] ]) -> Promise`](#fetchscalarstring-query---objectarray-data--string-columnname-----promise)
+    - [`.insert(string table, object row [ , string returning ]) -> Promise`](#insertstring-table-object-row---string-returning----promise)
+    - [`.update(string table, object data, object where [ , string returning ]) -> Promise`](#updatestring-table-object-data-object-where---string-returning----promise)
+    - [`.delete(string table, object where [ , string returning ]) -> Promise`](#deletestring-table-object-where---string-returning----promise)
+    - [`.exists(string table, object where) -> Promise`](#existsstring-table-object-where---promise)
+    - [`.count(string table [ , object where ]) -> Promise`](#countstring-table---object-where----promise)
+    - [`.begin() -> Promise`](#begin---promise)
+    - [`.commit() -> Promise`](#commit---promise)
+    - [`.rollback() -> Promise`](#rollback---promise)
 - [utils](#utils)
   - [sanitize.js](#sanitize)
     - [```.escape(string sql) -> string```]()
@@ -117,6 +118,12 @@ ___
 ```var DBH = require('dbh-pg')```
 ___
 
+####```object DBH.sanitize```
+Proxy to [```sanitize```](#sanitize).
+####```object DBH.sql```
+Proxy to [```sql```](#sql).
+___
+
 ####```DBH.prepare(string query) -> Function```
 Creates a function that return a named [```query object```](#query-object), 
 useful for use Prepared Statements.
@@ -146,12 +153,6 @@ using(dbh.conn(), function (conn) {
 })
 ```
 _____
-
-####```object DBH.sanitize```
-Proxy to [```sanitize```](#sanitize).
-####```object DBH.sql```
-Proxy to [```sql```](#sql).
-___
 
 ####```DBH.{shorthand}({args}) -> Function```
 
