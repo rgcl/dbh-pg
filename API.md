@@ -105,10 +105,11 @@ Is a plain object with these parameters:
 This object is used in [```DBH.sqlOrderBy(array of sortRule)```](#dbh-sqlorderby-string).
 
 ###Promises
-
+TODO
 ___
 
 ###Security
+TODO
 ___
 
 ##Classes
@@ -735,6 +736,24 @@ using(dbh.conn(), function (conn) {
 ___
 ##utils
 
+###sanitize.js
+___
+
+####`.escape(string sql) -> string`
+TODO
+___
+
+####`.array(array array) -> array
+TODO
+___
+
+####`.object(object object) -> object`
+TODO
+___
+
+####`.sort(object sort) -> object`
+TODO
+___
 ###sql.js
 Utils to create SQL chunks.
 
