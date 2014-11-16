@@ -754,7 +754,7 @@ ___
 TODO
 ___
 
-####`.array(array array, object whitelist) -> array
+####`.array(array array, object whitelist) -> array`
 TODO
 ___
 
