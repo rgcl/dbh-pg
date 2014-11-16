@@ -658,7 +658,7 @@ If you not call [`.commit]() then the transaction is auto rollback by the librar
 ```javascript
 // send $10.00 from id=10 to id=11
 using(dbh.conn(), function (conn) {
-  conn
+  return conn
   .begin() // start a transaction.
   .then(DBH.exec(
     'update wallet \
@@ -685,7 +685,7 @@ If you not call [`.commit]() then the transaction is auto rollback by the librar
 ####Example
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn
+  return conn
   .begin() // start a transaction.
   .then(DBH.exec(
     'update wallet \
@@ -712,7 +712,7 @@ If you not call [`.commit]() then the transaction is auto rollback by the librar
 ####Example
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn
+  return conn
   .begin() // start a transaction.
   .then(DBH.exec(
     'update wallet \
