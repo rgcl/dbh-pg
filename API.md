@@ -748,10 +748,12 @@ or with DBH:
 var DBH = require('dbh-pg'),
     sanitize = DBH.sanitize
 ```
+[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L23)
 ___
 
 ####`.escape(string sql) -> string`
 TODO
+
 ___
 
 ####`.array(array array, object whitelist) -> array`
