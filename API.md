@@ -51,13 +51,13 @@
 ##Concepts
 
 ###Parameterized Queries
-Consists in SQL commands string as ```'insert into book (name, author_id) values ($1, $2) '```
-in which ```$1``` and ```$2``` are placeholders that must be replaced with the real values by the library.
+Consists in SQL commands string as `'insert into book (name, author_id) values ($1, $2) '`
+in which `$1` and `$2` are placeholders that must be replaced with the real values by the library.
 
 ####Placeholders types
 
 #####Index placeholders
-```$1```, ```$2```, ```...``` uses an array for replacement.
+`$1`, `$2`, `...` uses an array for replacement.
 ######Example
 ```javascript
 'select * from animals where type=$1 and stains > $2'
@@ -65,10 +65,10 @@ in which ```$1``` and ```$2``` are placeholders that must be replaced with the r
 ```javascript
 ['cat', 3]
 ```
-> ```$1``` is for the 0-index position in the array.
+> `$1` is for the 0-index position in the array.
 
 #####Named placeholders
-```$name```, ```$author_id```, etc. Uses an plain object for replacement.
+`$name`, `$author_id`, etc. Uses an plain object for replacement.
 ######Example
 ```javascript
 'select * from animals where type=$type and stains > $stains'
@@ -86,23 +86,23 @@ ___
 ###Query Object
 
 Is a plain object with these parameters:
-- ```optional string``` name: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
-- ```string``` text: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
-- ```optional array``` values: An array of string values for replace in the ```text```. Default ```[]```.
+- *optional string* **name**: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
+- *string* **text**: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
+- *optional array* **values**: An array of string values for replace in the ```text```. Default ```[]```.
 
 This object is used by the native [pg][] module.
 
-> *named query object* is a query object in that the ```name``` is not empy.
+> *named query object* is a query object in that the `name` is not empy.
 
 ___
 
 ###sortRule Object
 
 Is a plain object with these parameters:
-- ```string``` attr: The attribute name.
-- ```optional boolean``` asc: ```true``` is the sort is ascending, ```false``` is is descending. Default ```true```.
+- *string* **attr**: The attribute name.
+- *optional boolean* **asc**: `true` is the sort is ascending, `false` is is descending. Default `true`.
 
-This object is used in [```DBH.sqlOrderBy(array of sortRule)```](#dbh-sqlorderby-string).
+This object is used by [`sql.orderBy`](#orderbyarray-sort---string).
 
 ###Promises
 TODO
