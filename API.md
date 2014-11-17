@@ -120,9 +120,9 @@ ___
 ___
 
 ####```object DBH.sanitize```
-Proxy to [```sanitize```](#sanitize).
+Proxy to [```sanitize```](#sanitizejs).
 ####```object DBH.sql```
-Proxy to [```sql```](#sql).
+Proxy to [```sql```](#sqljs).
 ___
 
 ####```DBH.prepare(string query) -> Function```
@@ -186,21 +186,23 @@ using(dbh.conn(), function (conn) {
 })
 ```
 #####All Shorthands
-| DBH              | Shorthand to... |
-|------------------|-----------------|
-| DBH.*exec*       | [.exec]()
-| DBH.*fetchOne*   | [.fetchOne]()
-| DBH.*fetchAll*   | [.fetchAll]()
-| DBH.*fetchColumn*| [.fetchColumn]()
-| DBH.*fetchScalar*| [.fetchScalar]()
-| DBH.*insert*     | [.insert]()
-| DBH.*update*     | [.update]()
-| DBH.*delete*     | [.delete]()
-| DBH.*count*      | [.count]()
-| DBH.*begin*      | [.begin]()
-| DBH.*commit*     | [.commit]()
-| DBH.*rollback*   | [.rollback]()
-| DBH.*done*       | [.done]()
+|------------------|-------------------|
+| DBH              | Shorthand to...   |
+|------------------|-------------------|
+| DBH.*exec*       | [.exec]()         |
+| DBH.*fetchOne*   | [.fetchOne]()     |
+| DBH.*fetchAll*   | [.fetchAll]()     |
+| DBH.*fetchColumn*| [.fetchColumn]()  |
+| DBH.*fetchScalar*| [.fetchScalar]()  |
+| DBH.*insert*     | [.insert]()       |
+| DBH.*update*     | [.update]()       |
+| DBH.*delete*     | [.delete]()       |
+| DBH.*count*      | [.count]()        |
+| DBH.*begin*      | [.begin]()        |
+| DBH.*commit*     | [.commit]()       |
+| DBH.*rollback*   | [.rollback]()     |
+| DBH.*done*       | [.done]()         |
+|------------------|-------------------|
 
 _____
 
