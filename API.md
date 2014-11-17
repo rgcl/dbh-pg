@@ -754,18 +754,26 @@ ___
 ####`.escape(string sql) -> string`
 TODO
 
+[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L29)
+
 ___
 
 ####`.array(array array, object whitelist) -> array`
 TODO
+
+[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L77-128)
 ___
 
 ####`.object(object object, object whitelist) -> object`
 TODO
+
+[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L130-193)
 ___
 
 ####`.sort(object sort, object whitelist) -> object`
 TODO
+
+[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L195-247)
 ___
 ###sql.js
 Utils to create SQL chunks.
