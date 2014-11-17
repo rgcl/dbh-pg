@@ -176,7 +176,7 @@ describe('DBH', function () {
             );
         });
 
-        it(".object({ name: 'pepe' }, { name: fn(val) -> 0 }) -> {}, function() {
+        it(".object({ name: 'pepe' }, { name: fn(val) -> 0 }) -> {}", function() {
             assert.equal(
                 sanitize.object({ name: 'pepe' }, { name: function (val) { return false; } })
                 , {}
