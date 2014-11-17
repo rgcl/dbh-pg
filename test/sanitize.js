@@ -36,7 +36,7 @@ describe('DBH', function () {
             assert:equal(sanitize.escape('Super'), 'Super');
         });
         
-        it('\0 gets escaped'), function() {
+        it('\0 gets escaped', function() {
             assert.equal(sanitize.escape('Sup\0er'), "Sup\\0er");
         });
 
@@ -256,7 +256,7 @@ describe('DBH', function () {
         it(".sort([{ attr: 'name' }], { name: fn(val) -> 'prefix_' + val }) -> [{ attr: 'prefix_name' }]", function() {
             assert.equal(
                 sanitize.object([{ attr: 'name' }], { name: function (val) { return 'prefix_' + val; } })
-                , [{ attr: 'prefix_name', asc: undefined }
+                , [{ attr: 'prefix_name', asc: undefined }]
             );
         });
 
