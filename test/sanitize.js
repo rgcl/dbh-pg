@@ -10,7 +10,7 @@ describe('DBH', function () {
 
     var assert = require('assert'),
         DBH = require('../'),
-        sanitizeReq = require('../sanitize'),
+        sanitizeReq = require('../lib/sanitize'),
         sanitizeProx = DBH.sanitize,
         sanitize = sanitizeReq;
 
