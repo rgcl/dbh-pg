@@ -186,23 +186,24 @@ using(dbh.conn(), function (conn) {
 })
 ```
 #####All Shorthands
-|------------------|-------------------|
-| DBH              | Shorthand to...   |
-|------------------|-------------------|
-| DBH.*exec*       | [.exec]()         |
-| DBH.*fetchOne*   | [.fetchOne]()     |
-| DBH.*fetchAll*   | [.fetchAll]()     |
-| DBH.*fetchColumn*| [.fetchColumn]()  |
-| DBH.*fetchScalar*| [.fetchScalar]()  |
-| DBH.*insert*     | [.insert]()       |
-| DBH.*update*     | [.update]()       |
-| DBH.*delete*     | [.delete]()       |
-| DBH.*count*      | [.count]()        |
-| DBH.*begin*      | [.begin]()        |
-| DBH.*commit*     | [.commit]()       |
-| DBH.*rollback*   | [.rollback]()     |
-| DBH.*done*       | [.done]()         |
-|------------------|-------------------|
+
+| DBH                | Shorthand to...   
+|--------------------|-------------------
+| `DBH.*exec*`       | [`.exec`](#execstring-query---objectarray-data----promise)
+| `DBH.*fetchOne*`   | [`.fetchOne`](#fetchonestring-query---objectarray-data----promise)
+| `DBH.*fetchAll*`   | [`.fetchAll`](#fetchallstring-query---objectarray-data----promise)
+| `DBH.*fetchColumn*`| [`.fetchColumn`](#fetchcolumnstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.*fetchScalar*`| [`.fetchScalar`](#fetchscalarstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.*insert*`     | [`.insert`](#insertstring-table-object-row---string-returning----promise)
+| `DBH.*update*`     | [`.update`](#updatestring-table-object-data-object-where---string-returning----promise)
+| `DBH.*delete*`     | [`.delete`](#deletestring-table-object-where---string-returning----promise)
+| `DBH.*exists*`     | [`.exists`](#existsstring-table-object-where---promise)
+| `DBH.*count*`      | [`.count`](#countstring-table---object-where----promise)
+| `DBH.*begin*`      | [`.begin`](#begin---promise)
+| `DBH.*commit*`     | [`.commit`](#commit---promise)
+| `DBH.*rollback*`   | [`.rollback`](#rollback---promise)
+| `DBH.*done*`       | `.done`
+
 
 _____
 
