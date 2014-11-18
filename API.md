@@ -15,6 +15,7 @@
     - [`object DBH.sanitize`](#object-dbhsanitize)
     - [`object DBH.sql`](#object-dbhsql)
     - [`DBH.prepare(string query)  -> Function`](#dbhpreparestring-query---function)
+    - [`DBH.one([ int index ]) -> Function`](#dbhone-int-index----function)
     - [`DBH.{shorthand}({args})  -> Function`](#dbhshorthandargs---function)
     - [`new DBH(string conextionString [ , object driver ]) -> DBH`](#new-dbhstring-conextionstring---object-driver----dbh)
     - [`new DBH(object settings [ , object driver ]) -> DBH`](#new-dbhobject-settings---object-driver----dbh)
@@ -34,6 +35,7 @@
     - [`.begin() -> Promise`](#begin---promise)
     - [`.commit() -> Promise`](#commit---promise)
     - [`.rollback() -> Promise`](#rollback---promise)
+    - [`.done() -> void`](#done---void)
 - [utils](#utils)
   - [sanitize.js](#sanitizejs)
     - [`.escape(string sql) -> string`](#escapestring-sql---string)
@@ -154,7 +156,33 @@ using(dbh.conn(), function (conn) {
 })
 ```
 _____
+####`DBH.one([ int index ]) -> Function`
+Return a function that receive an array and return the `index` element in the array.
 
+- *optional int* **index**
+  - default: 0
+  - the index of the array to return
+
+```javascript
+DBH.one = function (index) {
+  return function (items) {
+    return items[index || 0]
+  }
+}
+```
+#####Usage Example
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn
+    .update({...}, {...}, '*')
+    .then(DBH.one)
+})
+.then(function (updatedItem) {
+  // instead an array of one item,
+  // here we have only the item
+})
+```
+___
 ####```DBH.{shorthand}({args}) -> Function```
 
 The DBH shorthands are utilities functions for the [```Connection```](#connection)
@@ -187,24 +215,22 @@ using(dbh.conn(), function (conn) {
 ```
 #####All Shorthands
 
-| DBH                | Shorthand to...   
-|--------------------|-------------------
-| `DBH.*exec*`       | [`.exec`](#execstring-query---objectarray-data----promise)
-| `DBH.*fetchOne*`   | [`.fetchOne`](#fetchonestring-query---objectarray-data----promise)
-| `DBH.*fetchAll*`   | [`.fetchAll`](#fetchallstring-query---objectarray-data----promise)
-| `DBH.*fetchColumn*`| [`.fetchColumn`](#fetchcolumnstring-query---objectarray-data--string-columnname-----promise)
-| `DBH.*fetchScalar*`| [`.fetchScalar`](#fetchscalarstring-query---objectarray-data--string-columnname-----promise)
-| `DBH.*insert*`     | [`.insert`](#insertstring-table-object-row---string-returning----promise)
-| `DBH.*update*`     | [`.update`](#updatestring-table-object-data-object-where---string-returning----promise)
-| `DBH.*delete*`     | [`.delete`](#deletestring-table-object-where---string-returning----promise)
-| `DBH.*exists*`     | [`.exists`](#existsstring-table-object-where---promise)
-| `DBH.*count*`      | [`.count`](#countstring-table---object-where----promise)
-| `DBH.*begin*`      | [`.begin`](#begin---promise)
-| `DBH.*commit*`     | [`.commit`](#commit---promise)
-| `DBH.*rollback*`   | [`.rollback`](#rollback---promise)
-| `DBH.*done*`       | `.done`
-
-
+| DBH              | Shorthand to...   
+|------------------|-------------------
+| `DBH.exec`       | [`.exec`](#execstring-query---objectarray-data----promise)
+| `DBH.fetchOne`   | [`.fetchOne`](#fetchonestring-query---objectarray-data----promise)
+| `DBH.fetchAll`   | [`.fetchAll`](#fetchallstring-query---objectarray-data----promise)
+| `DBH.fetchColumn`| [`.fetchColumn`](#fetchcolumnstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.fetchScalar`| [`.fetchScalar`](#fetchscalarstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.insert`     | [`.insert`](#insertstring-table-object-row---string-returning----promise)
+| `DBH.update`     | [`.update`](#updatestring-table-object-data-object-where---string-returning----promise)
+| `DBH.delete`     | [`.delete`](#deletestring-table-object-where---string-returning----promise)
+| `DBH.exists`     | [`.exists`](#existsstring-table-object-where---promise)
+| `DBH.count`      | [`.count`](#countstring-table---object-where----promise)
+| `DBH.begin`      | [`.begin`](#begin---promise)
+| `DBH.commit`     | [`.commit`](#commit---promise)
+| `DBH.rollback`   | [`.rollback`](#rollback---promise)
+| `DBH.done`       | `.done`
 _____
 
 ####```new DBH(string conextionString [ , object driver ]) -> DBH```
@@ -323,7 +349,7 @@ _____
 ##Connection
 _____
 
-###```.exec(string query [ , object|array data ]) -> Promise```
+###`.exec(string query [ , object|array data ]) -> Promise`
 Send the given SQL query to the database.
 
 - *string* **query**:
@@ -736,6 +762,40 @@ using(dbh.conn(), function (conn) {
 })
 ```
 [`test`]() [`test autorollback`]()
+___
+###`.done() -> void`
+Return the conextion to the pool of conexions.
+
+To use *only* if you are not using [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise).
+
+> **Recommendation**: Ever use `Promise.using`, in this way `.done` is called automatically.
+
+####Examples:
+#####With `Promise.using`
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn.exec('...')
+  // We NOT use `conn.done()` because 
+  // we are using `Promise.using`.
+  // Therefore `.done` is called automatically
+  // by the library.
+})
+```
+#####Without `Promise.using`
+```javascript
+dbh.conn()
+  .exec('...')
+  .then(function () {
+    this.done();
+  }, function () {
+    this.done();
+  })
+  // or .then(DBH.done(), DBH.done())
+  
+  // Here we use `conn.done` because we
+  // are not inside the `Promise.using`
+})
+```
 ___
 ##utils
 
