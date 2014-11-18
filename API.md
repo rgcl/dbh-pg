@@ -7,6 +7,7 @@
 - [Concepts](#concepts)
   - [parameterized query](#parameterized-queries)
   - [query object](#query-object)
+  - [result object](#result-object)
   - [sortRule object](#sortrule-object)
   - [promises](#promises)
   - [security](#security)
@@ -86,8 +87,8 @@ For security reasons. The library uses Prepared Statements and therefore help to
 ___
 
 ###Query Object
-
 Is a plain object with these parameters:
+
 - *optional string* **name**: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
 - *string* **text**: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
 - *optional array* **values**: An array of string values for replace in the ```text```. Default ```[]```.
@@ -98,14 +99,33 @@ This object is used by the native [pg][] module.
 
 ___
 
+###Result Object
+Is a plain object with these parameters:
+
+- *string* **command**:
+  - The sql command that was executed (e.g. "SELECT", "UPDATE", etc.)
+- *int* **rowCount**:
+  - The number of rows affected by the SQL statement [(more information)](http://www.postgresql.org/docs/8.1/static/libpq-exec.html#LIBPQ-EXEC-NONSELECT)
+- **oid**:
+  - the oid returned
+- *array* **rows**:
+  - an array of rows
+
+[`pg documentation`](https://github.com/brianc/node-postgres/wiki/Query#result-object)
+___
+
 ###sortRule Object
 
 Is a plain object with these parameters:
-- *string* **attr**: The attribute name.
-- *optional boolean* **asc**: `true` is the sort is ascending, `false` is is descending. Default `true`.
+- *string* **attr**:
+  - The attribute name.
+- *optional boolean* **asc**:
+  - default: *true*
+  - `true` is the sort is ascending, `false` is is descending.
 
 This object is used by [`sql.orderBy`](#orderbyarray-sort---string).
 
+___
 ###Promises
 TODO
 ___
@@ -157,31 +177,25 @@ using(dbh.conn(), function (conn) {
 ```
 _____
 ####`DBH.one([ int index ]) -> Function`
-Return a function that receive an array and return the `index` element in the array.
+Return a function that receive a [`result object`](#result-object) and return `result.rows[index]`.
 
 - *optional int* **index**
   - default: 0
   - the index of the array to return
 
-```javascript
-DBH.one = function (index) {
-  return function (items) {
-    return items[index || 0]
-  }
-}
-```
 #####Usage Example
 ```javascript
 using(dbh.conn(), function (conn) {
   return conn
-    .update({...}, {...}, '*')
-    .then(DBH.one)
+    .update({...}, { pk: 2 }, '*')
+    .then(DBH.one())
 })
 .then(function (updatedItem) {
   // instead an array of one item,
   // here we have only the item
 })
 ```
+[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/DBH.js#L66-70)
 ___
 ####```DBH.{shorthand}({args}) -> Function```
 
@@ -292,22 +306,22 @@ _____
 Get a connection from the pool.
 
 - *optional object* **scope**
-  - default value: ```{}```
-  - The value that is in ```.scope``` in ever promise callback.
+  - default value: `{}`
+  - The value that is in `.scope` in ever promise callback.
 
-When you call ```dbh.conn()``` you get a promise that will be fulfilled when 
+When you call `dbh.conn()` you get a promise that will be fulfilled when 
 a connection from the pool of connections is released.
 
-Is **extremely important** that the last promise call the [```.done```]() method.
+Is **extremely important** that the last promise call the [`.done`]() method.
 
 ```javascript
 dbh.conn()
     .exec(...)
     .then(DBH.update(...))
-    .then(DBH.done, DBH.done) // Here we call the .done
-                              // then the connection is
-                              // release to the
-                              // connection pool
+    .then(DBH.done(), DBH.done()) // Here we call the .done
+                                  // then the connection is
+                                  // release to the
+                                  // connection pool
 ```
 
 The best way to do this is using [```Promise.using```](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise),
@@ -344,10 +358,10 @@ using(dbh.conn(this), function (conn) {
 })
 ```
 
-_____
+___
 
 ##Connection
-_____
+___
 
 ###`.exec(string query [ , object|array data ]) -> Promise`
 Send the given SQL query to the database.
@@ -357,45 +371,43 @@ Send the given SQL query to the database.
 - *optional object|array* **data**:
   - The data to use with the `query` if it is [parameterized](#parameterized-queries)
 
-Returns a object with this parameters:
-- *string* **command**:
-  - The sql command that was executed (e.g. "SELECT", "UPDATE", etc.)
-- *int* **rowCount**:
-  - The number of rows affected by the SQL statement [(more information)](http://www.postgresql.org/docs/8.1/static/libpq-exec.html#LIBPQ-EXEC-NONSELECT)
-- **oid**:
-  - the oid returned
-- *array* **rows**:
-  - an array of rows
+Returns a [`result object`](#result object)
 
 ####Example:
 #####Simple Query:
 ```javascript
-conn
-.exec('select * from book where price <= 20.0')
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= 20.0')
 })
+.then(function (resultset) {
+  console.log(resultset)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+})
+
 ```
 #####[Indexed Parameterized Query]()
 ```javascript
-conn
-.exec('select * from book where price <= $1', [20.0])
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= $1', [20.0])
+})
 .then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+  console.log(resultset)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 #####[Named Parameterized Query]()
 ```javascript
-conn
-.exec('select * from book where price <= $price', { price: 20.0 })
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= $price', {
+    price: 20.0
+  })
+})
 .then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+  console.log(resultset)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
-_____
+___
 
 ###```conn.exec(object query) -> Promise```
 Execute the query.
@@ -403,14 +415,15 @@ Execute the query.
 > **See:** [query object]()
 
 ```javascript
-conn
-.exec({
+using(dbh.conn(), function (conn) {
+  return conn.exec({
     text: 'select * from book where author_id=$1',
     values : [ 32 ]
+  })
 })
 .then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], count: 1,  }
+  console.log(resultset)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 ___
@@ -429,14 +442,14 @@ Returns the first tupla as ```object```.
 #####With `.fetchOne`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchOne(
+  return conn.fetchOne(
     'select * from planet where habitants > $1 limit 1'
     , [3000]
   )
-  .then(function (planet) {
-    console.log(planet)
-    // { name: 'Kolobo', habitants:... }
-  })
+})
+.then(function (planet) {
+  console.log(planet)
+  // { name: 'Kolobo', habitants:... }
 })
 ```
 #####Without `.fetchOne`
@@ -447,12 +460,13 @@ using(dbh.conn(), function (conn) {
     , [3000]
   )
   .then(function (result) {
+    // extra step
     return result.rows[0]
   })
-  .then(function (planet) {
-    console.log(planet)
-    // { name: 'Kolobo', habitants:... }
-  })
+})
+.then(function (planet) {
+  console.log(planet)
+  // { name: 'Kolobo', habitants:... }
 })
 ```
 
@@ -461,7 +475,7 @@ using(dbh.conn(), function (conn) {
 ___
 
 ###`.fetchAll(string query [ , object|array data ]) -> Promise`
-Shortcut to `result.rows` of [`.exec`]()
+Shortcut to `result.rows` of [`.exec`](#execstring-query---objectarray-data----promise)
 
 - *string* **query**:
   - the SQL command to send to the database
@@ -474,24 +488,25 @@ Returns an array of tuplas.
 #####With `.fetchAll`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchAll('select * from planet where habitants > $1', [3000])
-    .then(function (planets) {
-      console.log(planets)
-      // [{ name: 'Kolobo', habitants:... }, ...]
-    })
+  return conn.fetchAll('select * from planet where habitants > $1', [3000])
+})
+.then(function (planets) {
+  console.log(planets)
+  // [{ name: 'Kolobo', habitants:... }, ...]
 })
 ```
 #####Without `.fetchAll`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.exec('select * from planet where habitants > $1', [3000])
+  return conn.exec('select * from planet where habitants > $1', [3000])
     .then(function (result) {
+      // extra step
       return result.rows
     })
-    .then(function (planets) {
-      console.log(planets)
-      // [{ name: 'Kolobo', habitants:... }, ...]
-    })
+})
+.then(function (planets) {
+  console.log(planets)
+  // [{ name: 'Kolobo', habitants:... }, ...]
 })
 ```
 ___
@@ -510,18 +525,18 @@ In this query:
 SELECT name FROM account
 ```
 The `result.rows` is:
-```
+```javascript
 [{ name: 'Name1'}, { name: 'Name2' }, { name: 'Name3' }, ...]
 ```
-Instead, fetchColumn returns
-```
+Instead, `.fetchColumn` returns
+```javascript
 [ 'Name1', 'Name2', 'Name3', ...]
 ```
 
 ####Example
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchColumn('select name from planet where habitants > $1', [3000])
+  return conn.fetchColumn('select name from planet where habitants > $1', [3000])
     .then(function (planets) {
       console.log(planets)
       // [ 'Kolobo', 'Saturn', 'Ponnyland' ]
@@ -563,14 +578,24 @@ Insert the `row` in the `table`.
   - the data to return. Useful for know autogenerated values.
   - is comma separated for each column name, e.g. `*` or, `name,birthday`.
 
-####Example
+If `returning` is *undefined*, then return *undefined*, 
+otherwise an *object* with the attributes described  in `returning`.
+
+####Examples:
+#####Simple:
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.insert('planet', { name: 'Mart', habitants: 343 }, 'id')
-    .then(function (id) {
-      console.log(id)
-      // 435
-    })
+  return conn.insert('planet', { name: 'Mart', habitants: 343 })
+})
+```
+#####To know the autogenerated `id`:
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn.insert('planet', { name: 'Mart', habitants: 343 }, 'id')
+})
+.then(function (planet) {
+  console.log(planet.id)
+  // 435
 })
 ```
 ___
@@ -783,18 +808,18 @@ using(dbh.conn(), function (conn) {
 ```
 #####Without `Promise.using`
 ```javascript
-dbh.conn()
-  .exec('...')
-  .then(function () {
-    this.done();
-  }, function () {
-    this.done();
-  })
-  // or .then(DBH.done(), DBH.done())
-  
-  // Here we use `conn.done` because we
-  // are not inside the `Promise.using`
+dbh
+.conn()
+.exec('...')
+.then(function () {
+  return this.done();
+}, function () {
+  return this.done();
 })
+// or .then(DBH.done(), DBH.done())
+
+// Here we use `conn.done` because we
+// are not inside the `Promise.using`
 ```
 ___
 ##utils
