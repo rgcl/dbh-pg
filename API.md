@@ -371,7 +371,7 @@ Send the given SQL query to the database.
 - *optional object|array* **data**:
   - The data to use with the `query` if it is [parameterized](#parameterized-queries)
 
-Returns a [`result object`](#result object)
+Returns a [`result object`](#result-object)
 
 ####Example:
 #####Simple Query:
@@ -379,8 +379,8 @@ Returns a [`result object`](#result object)
 using(dbh.conn(), function (conn) {
   return conn.exec('select * from book where price <= 20.0')
 })
-.then(function (resultset) {
-  console.log(resultset)
+.then(function (result) {
+  console.log(result)
   // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 
@@ -390,8 +390,8 @@ using(dbh.conn(), function (conn) {
 using(dbh.conn(), function (conn) {
   return conn.exec('select * from book where price <= $1', [20.0])
 })
-.then(function (resultset) {
-  console.log(resultset)
+.then(function (result) {
+  console.log(result)
   // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
@@ -402,8 +402,8 @@ using(dbh.conn(), function (conn) {
     price: 20.0
   })
 })
-.then(function (resultset) {
-  console.log(resultset)
+.then(function (result) {
+  console.log(result)
   // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
@@ -412,7 +412,7 @@ ___
 ###```conn.exec(object query) -> Promise```
 Execute the query.
 
-> **See:** [query object]()
+> **See:** [query object](#query-object)
 
 ```javascript
 using(dbh.conn(), function (conn) {
@@ -421,22 +421,22 @@ using(dbh.conn(), function (conn) {
     values : [ 32 ]
   })
 })
-.then(function (resultset) {
-  console.log(resultset)
+.then(function (result) {
+  console.log(result)
   // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 ___
 
 ###`.fetchOne(string query [ , object|array data ]) -> Promise`
-Shortcut to `result.rows[0]` of [`.exec`]()
+Shortcut to `result.rows[0]` of [`.exec`](#execstring-query---objectarray-data----promise)
 
 - *string* **query**:
   - the SQL command to send to the database
 - *optional object|array* **data**:
-  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+  - The data to use with the `query` if it is [`parameterized`](#parameterized-queries)
 
-Returns the first tupla as ```object```.
+Returns the first row as ```object```.
 
 ####Example
 #####With `.fetchOne`
@@ -459,10 +459,7 @@ using(dbh.conn(), function (conn) {
     'select * from planet where habitants > $1 limit 1'
     , [3000]
   )
-  .then(function (result) {
-    // extra step
-    return result.rows[0]
-  })
+  .then(DBH.one()) // extra step
 })
 .then(function (planet) {
   console.log(planet)
