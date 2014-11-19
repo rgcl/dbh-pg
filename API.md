@@ -48,8 +48,8 @@
     - [`.limit(object ctx) -> string`](#limitobject-ctx---string)
     - [`.orderBy(array sort) -> string`](#orderbyarray-sort---string)
     - [`.orderBy(object ctx) -> string`](#orderbyobjectctx---string)
-    - [`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`]()
-    - [`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`]()
+    - [`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`](#tonamedobject-object---string-separator---string-inseparator-----string)
+    - [`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`](#toindexedobject-object-array-refarray---string-separator---string-inseparator-----string)
 
 ##Concepts
 
@@ -244,7 +244,7 @@ using(dbh.conn(), function (conn) {
 | `DBH.begin`      | [`.begin`](#begin---promise)
 | `DBH.commit`     | [`.commit`](#commit---promise)
 | `DBH.rollback`   | [`.rollback`](#rollback---promise)
-| `DBH.done`       | `.done`
+| `DBH.done`       | [`.done`](#done---void)
 _____
 
 ####```new DBH(string conextionString [ , object driver ]) -> DBH```
@@ -837,20 +837,128 @@ var DBH = require('dbh-pg'),
 ___
 
 ####`.escape(string sql) -> string`
-TODO
+Escape the given sql.
+
+#####Example:
+```javascript
+sanitize.escape('" or 1=1 -- ')
+-> '\" or 1=1 -- '
+````
 
 [`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L29)
-
 ___
 
 ####`.array(array array, object whitelist) -> array`
-TODO
+Filter the given `array` with the `whitelist`.
+
+- *array* **array**:
+  - the array to filter.
+- *object* **whitelist**:
+  - an object in that the `keys` are compared with each `item` in the array.
+
+#####Rules for sanitize
+One item in the **array** will be included in the returning *array* 
+if matches with some `key` in the **whitelist** and:
+
+######a) The `value` of the `key` in the **whitelist** is `true`
+```javascript
+sanitize.array(['red', 'blue'], { red: true, blue: false })
+-> ['red']
+````
+######b) The `value` of the `key` in the **whitelist** is `string`
+In this case the `ìtem` is overwrited by the `string`.
+```javascript
+sanitize.array(['red', 'blue'], { red: true, blue: 'azul' })
+-> ['red', 'azul']
+````
+######c) The `value` of the `key` in the **whitelist** is a function that returns (a), (b) or (c).
+```javascript
+sanitize.array(['name', 'email'], {
+  name: 'true',
+  email: function (item) {
+    // admit the email only if isAdmin is true
+    return isAdmin();
+  }
+})
+-> ['name'] // assuming that isAdmin() return false
+````
+
+#####Example:
+Creation of safe `SELECT` where the fields come from the user input.
+```javascript
+function makeSelect(userInput, isAdmin) {
+  var fields = sanitize.array(userInput, {
+    name: 'a.name',
+    email: function (item) { return isAdmin ? 'a.email' : false }
+  })
+  return = 'select '
+    + fields.join(',')
+    + ' from account a'
+}
+
+makeSelect(['name', 'pass'], true)
+-> 'select u.name from account a'
+// because the pass is not in the whitelist, 
+// then is not in the returning array
+````
 
 [`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L77-128)
 ___
 
 ####`.object(object object, object whitelist) -> object`
-TODO
+Filter the given **object** with the **whitelist**.
+
+- *object* **object**:
+  - the object to filter.
+- *object* **whitelist**:
+  - an object in that the `keys` are compared with each `key` in the **object**.
+
+#####Rules for sanitize
+One item in the **object** will be included in the returning *object* 
+if their `key` matches with some `key` in the **whitelist** and:
+
+######a) The `value` of the `key` in the **whitelist** is `true`
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, { color: true, type: false })
+-> { color: 'yellow' }
+````
+######b) The `value` of the `key` in the **whitelist** is `string`
+In this case the `key` of the item is overwrited by the `string`.
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, { color: true, type: 'font' })
+-> { color: 'yellow', font: 'comic sans' }
+````
+######c) The `value` of the `key` in the **whitelist** is a function that returns (a), (b) or (c).
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, {
+  color: 'true',
+  type: function (key, value) {
+    // admit the type only if isDesigner is true
+    return isDesigner();
+  }
+})
+-> { color: 'yellow' } // assuming that isDesigner() return false
+````
+
+#####Example:
+Creation of safe `SELECT` where the `WHERE` come from the user input.
+```javascript
+function makeSelect(userInput) {
+  var where = sanitize.object(userInput, {
+    name: 'a.name',
+    // admit only if the email is from the company
+    email: function (key, value) { return /@mycompany/.test(value) ? 'a.email' : false }
+  })
+  return = 'select a.id, a.name from account a where '
+    + sql.toNamed(where)
+}
+
+makeSelect({ name: 'Canela', pass: '123', email: 'canela@example.com' })
+-> 'select a.id, a.name from account where a.name=$name'
+// because the pass is not in the whitelist, 
+// then is not in the returning array.
+// email is not because not match with the regExp /@mycompany/
+````
 
 [`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L130-193)
 ___
