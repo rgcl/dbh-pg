@@ -33,7 +33,7 @@ describe('DBH', function () {
         });
 
         it(".escape('Super') -> 'Super'", function () {
-            assert:equal(sanitize.escape('Super'), 'Super');
+            assert.equal(sanitize.escape('Super'), 'Super');
         });
         
         it('\0 gets escaped', function() {
@@ -45,31 +45,31 @@ describe('DBH', function () {
         });
 
         it('\n gets escaped', function() {
-            assert.equal(sanitize.escape('Sup\ner'), "'Sup\\ner'");
+            assert.equal(sanitize.escape('Sup\ner'), "Sup\\ner");
         });
 
         it('\r gets escaped', function() {
-            assert.equal(sanitize.escape('Sup\rer'), "'Sup\\rer'");
+            assert.equal(sanitize.escape('Sup\rer'), "Sup\\rer");
         });
 
         it('\t gets escaped', function() {
-            assert.equal(sanitize.escape('Sup\ter'), "'Sup\\ter'");
+            assert.equal(sanitize.escape('Sup\ter'), "Sup\\ter");
         });
 
         it('\\ gets escaped', function() {
-            assert.equal(sanitize.escape('Sup\\er'), "'Sup\\\\er'");
+            assert.equal(sanitize.escape('Sup\\er'), "Sup\\\\er");
         });
 
         it('\u001a (ascii 26) gets replaced with \\Z', function() {
-            assert.equal(sanitize.escape('Sup\u001aer'), "'Sup\\Zer'");
+            assert.equal(sanitize.escape('Sup\u001aer'), "Sup\\Zer");
         });
 
         it('single quotes get escaped', function() {
-            assert.equal(sanitize.escape('Sup\'er'), "'Sup\\'er'");
+            assert.equal(sanitize.escape('Sup\'er'), "Sup\\'er");
         });
 
         it('double quotes get escaped', function() {
-            assert.equal(sanitize.escape('Sup"er'), "'Sup\\\"er'");
+            assert.equal(sanitize.escape('Sup"er'), "Sup\\\"er");
         });
 
     });
