@@ -954,7 +954,7 @@ function makeSelect(userInput) {
 }
 
 makeSelect({ name: 'Canela', pass: '123', email: 'canela@example.com' })
--> 'select a.id, a.name from account where a.name=$name'
+-> 'select a.id, a.name from account a where a.name=$name'
 // because the pass is not in the whitelist, 
 // then is not in the returning array.
 // email is not because not match with the regExp /@mycompany/
