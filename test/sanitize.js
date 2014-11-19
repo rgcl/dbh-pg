@@ -68,7 +68,7 @@ describe('DBH', function () {
             assert.equal(sanitize.escape('Sup\'er'), "'Sup\\'er'");
         });
 
-        it('double quotes get escaped': function() {
+        it('double quotes get escaped', function() {
             assert.equal(sanitize.escape('Sup"er'), "'Sup\\\"er'");
         });
 
