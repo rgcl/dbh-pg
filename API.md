@@ -934,7 +934,7 @@ sql.orderBy([
 -> ' ORDER BY editorial ASC '
 ```
 ```javascript
-DBH.sqlLimit({ })
+DBH.orderBy([])
 -> ' '
 ```
 _____
@@ -958,8 +958,55 @@ sql.orderBy({  })
 ```
 ___
 ####`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`
-TODO
+Format the object to [`named query`](#named-placeholders) chunk.
+
+- *object* **object**
+- *optional string* **separator**:
+  - default: `'AND'`
+- *optional string* **inSeparator**:
+  - default: `'='`
+
+#####Examples:
+```javascript
+sql.toNamed({ name: 'Bill', last: 'Puertas' })
+-> ' name=$name AND last=$last '
+```
+
+```javascript
+sql.toNamed({ name: 'Bill', last: 'Puertas' }, ',')
+-> ' name=$name , last=$last '
+```
+[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/sql.js#L43-59)
 ___
 ####`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`
-TODO
+Format the object to [`indexed query`](#index-placeholders) chunk.
+
+- *object* **object**
+- *array* **refArray**:
+  - an array that will be mutated adding the values according to the index in the result string
+- *optional string* **separator**:
+  - default: `'AND'`
+- *optional string* **inSeparator**:
+  - default: `'='`
+
+#####Examples:
+```javascript
+var arr = []
+sql.toIndexed({ name: 'Bill', last: 'Puertas' })
+-> ' name=$1 AND last=$2 '
+
+console.log(arr)
+-> ['Bill', 'Puertas']
+```
+
+```javascript
+var arr = []
+sql.toIndexed({ name: 'Bill', last: 'Puertas' }, ',')
+-> ' name=$1 , last=$2 '
+
+console.log(arr)
+-> ['Bill', 'Puertas']
+```
+[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/sql.js#L61-79)
+
 [pg]: https://www.npmjs.org/package/pg
