@@ -255,7 +255,7 @@ describe('DBH', function () {
 
         it(".sort([{ attr: 'name' }], { name: fn(val) -> 'prefix_' + val }) -> [{ attr: 'prefix_name' }]", function() {
             assert.deepEqual(
-                sanitize.object([{ attr: 'name' }], { name: function (val) { return 'prefix_' + val; } })
+                sanitize.sort([{ attr: 'name' }], { name: function (val) { return 'prefix_' + val; } })
                 , [{ attr: 'prefix_name', asc: undefined }]
             );
         });
