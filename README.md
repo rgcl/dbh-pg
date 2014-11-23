@@ -23,11 +23,11 @@ to write deeply nested functions for commons task such as create transactions.
 ##Installation
 
 The latest stable version:
-```bash
+```sh
 $ npm install dbh-pg
 ```
 It is recommended that you also install [bluebird][] for use `Promise.using`:
-```bash
+```sh
 $ npm install bluebird
 ```
 ##Usage
@@ -48,10 +48,10 @@ var db = new DBH('postgres://postgres@localhost/db2test')
 using(db.conn(), function (conn) {
     // a connection from the pool
     return conn
-        .fetchOne('select * from user where id=$1', [10])
-        .then(function (user) {
-            console.log(user) // {id:10, name:...}
-        })
+    .fetchOne('select * from user where id=$1', [10])
+    .then(function (user) {
+        console.log(user) // {id:10, name:...}
+    })
 }) // automatic release the connection to pool
 ```
 [`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise)
@@ -66,29 +66,29 @@ using(db.conn(), function (conn) {
 // send 10 coins from user_id=3 to user_id=4
 using(db.conn(), function (conn) {
     return conn
-        .begin() // start transaction
-        .then(function () {
-            // 'this' points to the created connection 'conn'
-            return this.exec(
-                'update wallet \
-                set coins = coins - 10 \
-                where user_id=$1',
-                [3]
-            );
-        }).then(function () {
-            return this.exec(
-                'update wallet \
-                set coins = coins + 10 \
-                where user_id=$1',
-                [4]
-            );
-        }).then(function () {
-            // commit the transaction!
-            return this.commit();
-        });
+    .begin() // start transaction
+    .then(function () {
+        // 'this' points to the created connection 'conn'
+        return this.exec(
+            'update wallet \
+            set coins = coins - 10 \
+            where user_id=$1',
+            [3]
+        );
+    }).then(function () {
+        return this.exec(
+            'update wallet \
+            set coins = coins + 10 \
+            where user_id=$1',
+            [4]
+        );
+    }).then(function () {
+        // commit the transaction!
+        return this.commit();
+    });
 });
 ```
-
+[`conn.begin`](API.md#begin---promise) [`conn.exec`](API.md#execstring-query---objectarray-data----promise) [`conn.commit`](API.md#commit---promise)
 ###Parallel task
 
 ```javascript
@@ -125,23 +125,21 @@ using(db.conn(), function (conn) {
     )).then(DBH.commit())
 })
 ```
-
+[`DBH shorthands`](API.md#dbhshorthandargs---function)
 ###Using objects as replacement
 
 ```javascript
 // This is the first example, note that
 // instead of $1 this uses $id
 using(db.conn(), function (conn) {
-    conn
-    .fetchOne('select * from user where id=$id', {
-        id : 10
-    })
+    return conn
+    .fetchOne('select * from user where id=$id', { id : 10 })
     .then(function (user) {
         console.log(user)
     })
 })
 ```
-
+[`named parameterized queries`](API.md#named-placeholders)
 ###Prepared Statements
 
 ```javascript
@@ -158,7 +156,7 @@ using(db.conn(), function (conn) {
     return Promise.all(promises)
 })
 ```
-
+[`DBH.prepare`](API.md#dbhpreparestring-query---function)
 ##Contributing
 **We ♥ contributions**
 
