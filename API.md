@@ -985,7 +985,7 @@ ___
 ####`.limit(int limit [ , int offset ]) -> string`
 Safe construction of SQL `limit` string.
 
-- *int* **limit*
+- *int* **limit**
 - *optional int* **offset**
 
 #####Examples:
