@@ -173,5 +173,47 @@ describe('DBH', function () {
         });
 
     });
+    
+    describe('.orderBy', function () {
+
+        it('.orderBy([])', function () {
+            assert.equal(sql.orderBy([]), ' ');
+        });
+
+        it('.orderBy([{ attr: "name" }])', function () {
+            assert.equal(sql.orderBy([{ attr: 'name' }]), ' ORDER BY name ASC ');
+        });
+
+        it('.orderBy([{ attr: "name", asc: true }])', function () {
+            assert.equal(sql.orderBy([{ attr: 'name', asc: true }]), ' ORDER BY name ASC ');
+        });
+
+        it('.orderBy([{ attr: "name", asc: false }])', function () {
+            assert.equal(sql.orderBy([{ attr: 'name', asc: true }]), ' ORDER BY name DESC ');
+        });
+
+        it('.orderBy([sortRule1, sortRule2])', function () {
+            assert.equal(sql.orderBy([
+                { attr: 'name', asc: true }
+                { attr: 'last', asc: false }
+            ]), ' ORDER BY name ASC, last DESC ');
+        });
+
+        it('.orderBy([sortRule1, sortRule2])', function () {
+            assert.equal(sql.orderBy([
+                { attr: 'name', asc: true }
+                { attr: 'last' }
+            ]), ' ORDER BY name ASC, last ASC ');
+        });
+
+        // sortRule.attr is NOT SQL Injection safe!
+        // for this use sanitize.sort before
+        it('.orderBy([{ attr: "a; drop table users -- " }]) -> " ORDER BY a; drop table users -- ASC "', function () {
+            assert.equal(sql.orderBy([
+                { attr: 'a; drop table users -- ' }
+            ]), ' ORDER BY a; drop table users -- ASC ');
+        });
+
+    });
 
 });
