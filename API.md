@@ -7,6 +7,7 @@
 - [Concepts](#concepts)
   - [parameterized query](#parameterized-queries)
   - [query object](#query-object)
+  - [result object](#result-object)
   - [sortRule object](#sortrule-object)
   - [promises](#promises)
   - [security](#security)
@@ -15,6 +16,7 @@
     - [`object DBH.sanitize`](#object-dbhsanitize)
     - [`object DBH.sql`](#object-dbhsql)
     - [`DBH.prepare(string query)  -> Function`](#dbhpreparestring-query---function)
+    - [`DBH.one([ int index ]) -> Function`](#dbhone-int-index----function)
     - [`DBH.{shorthand}({args})  -> Function`](#dbhshorthandargs---function)
     - [`new DBH(string conextionString [ , object driver ]) -> DBH`](#new-dbhstring-conextionstring---object-driver----dbh)
     - [`new DBH(object settings [ , object driver ]) -> DBH`](#new-dbhobject-settings---object-driver----dbh)
@@ -34,6 +36,7 @@
     - [`.begin() -> Promise`](#begin---promise)
     - [`.commit() -> Promise`](#commit---promise)
     - [`.rollback() -> Promise`](#rollback---promise)
+    - [`.done() -> void`](#done---void)
 - [utils](#utils)
   - [sanitize.js](#sanitizejs)
     - [`.escape(string sql) -> string`](#escapestring-sql---string)
@@ -45,19 +48,19 @@
     - [`.limit(object ctx) -> string`](#limitobject-ctx---string)
     - [`.orderBy(array sort) -> string`](#orderbyarray-sort---string)
     - [`.orderBy(object ctx) -> string`](#orderbyobjectctx---string)
-    - [`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`]()
-    - [`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`]()
+    - [`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`](#tonamedobject-object---string-separator---string-inseparator-----string)
+    - [`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`](#toindexedobject-object-array-refarray---string-separator---string-inseparator-----string)
 
 ##Concepts
 
 ###Parameterized Queries
-Consists in SQL commands string as ```'insert into book (name, author_id) values ($1, $2) '```
-in which ```$1``` and ```$2``` are placeholders that must be replaced with the real values by the library.
+Consists in SQL commands string as `'insert into book (name, author_id) values ($1, $2) '`
+in which `$1` and `$2` are placeholders that must be replaced with the real values by the library.
 
 ####Placeholders types
 
 #####Index placeholders
-```$1```, ```$2```, ```...``` uses an array for replacement.
+`$1`, `$2`, `...` uses an array for replacement.
 ######Example
 ```javascript
 'select * from animals where type=$1 and stains > $2'
@@ -65,10 +68,10 @@ in which ```$1``` and ```$2``` are placeholders that must be replaced with the r
 ```javascript
 ['cat', 3]
 ```
-> ```$1``` is for the 0-index position in the array.
+> `$1` is for the 0-index position in the array.
 
 #####Named placeholders
-```$name```, ```$author_id```, etc. Uses an plain object for replacement.
+`$name`, `$author_id`, etc. Uses an plain object for replacement.
 ######Example
 ```javascript
 'select * from animals where type=$type and stains > $stains'
@@ -84,26 +87,45 @@ For security reasons. The library uses Prepared Statements and therefore help to
 ___
 
 ###Query Object
-
 Is a plain object with these parameters:
-- ```optional string``` name: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
-- ```string``` text: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
-- ```optional array``` values: An array of string values for replace in the ```text```. Default ```[]```.
+
+- *optional string* **name**: If is given the created query uses a [prepared statement](https://github.com/brianc/node-postgres/wiki/Client#prepared-statements).
+- *string* **text**: The SQL command. Can be an [```index parameterized query```](#index-placeholders) query.
+- *optional array* **values**: An array of string values for replace in the ```text```. Default ```[]```.
 
 This object is used by the native [pg][] module.
 
-> *named query object* is a query object in that the ```name``` is not empy.
+> *named query object* is a query object in that the `name` is not empy.
 
+___
+
+###Result Object
+Is a plain object with these parameters:
+
+- *string* **command**:
+  - The sql command that was executed (e.g. "SELECT", "UPDATE", etc.)
+- *int* **rowCount**:
+  - The number of rows affected by the SQL statement [(more information)](http://www.postgresql.org/docs/8.1/static/libpq-exec.html#LIBPQ-EXEC-NONSELECT)
+- **oid**:
+  - the oid returned
+- *array* **rows**:
+  - an array of rows
+
+[`pg documentation`](https://github.com/brianc/node-postgres/wiki/Query#result-object)
 ___
 
 ###sortRule Object
 
 Is a plain object with these parameters:
-- ```string``` attr: The attribute name.
-- ```optional boolean``` asc: ```true``` is the sort is ascending, ```false``` is is descending. Default ```true```.
+- *string* **attr**:
+  - The attribute name.
+- *optional boolean* **asc**:
+  - default: *true*
+  - `true` is the sort is ascending, `false` is is descending.
 
-This object is used in [```DBH.sqlOrderBy(array of sortRule)```](#dbh-sqlorderby-string).
+This object is used by [`sql.orderBy`](#orderbyarray-sort---string).
 
+___
 ###Promises
 TODO
 ___
@@ -120,9 +142,9 @@ ___
 ___
 
 ####```object DBH.sanitize```
-Proxy to [```sanitize```](#sanitize).
+Proxy to [```sanitize```](#sanitizejs).
 ####```object DBH.sql```
-Proxy to [```sql```](#sql).
+Proxy to [```sql```](#sqljs).
 ___
 
 ####```DBH.prepare(string query) -> Function```
@@ -154,7 +176,27 @@ using(dbh.conn(), function (conn) {
 })
 ```
 _____
+####`DBH.one([ int index ]) -> Function`
+Return a function that receive a [`result object`](#result-object) and return `result.rows[index]`.
 
+- *optional int* **index**
+  - default: 0
+  - the index of the array to return
+
+#####Usage Example
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn
+    .update({...}, { pk: 2 }, '*')
+    .then(DBH.one())
+})
+.then(function (updatedItem) {
+  // instead an array of one item,
+  // here we have only the item
+})
+```
+[`definition`](lib/DBH.js#L66-70)
+___
 ####```DBH.{shorthand}({args}) -> Function```
 
 The DBH shorthands are utilities functions for the [```Connection```](#connection)
@@ -186,22 +228,23 @@ using(dbh.conn(), function (conn) {
 })
 ```
 #####All Shorthands
-| DBH              | Shorthand to... |
-|------------------|-----------------|
-| DBH.*exec*       | [.exec]()
-| DBH.*fetchOne*   | [.fetchOne]()
-| DBH.*fetchAll*   | [.fetchAll]()
-| DBH.*fetchColumn*| [.fetchColumn]()
-| DBH.*fetchScalar*| [.fetchScalar]()
-| DBH.*insert*     | [.insert]()
-| DBH.*update*     | [.update]()
-| DBH.*delete*     | [.delete]()
-| DBH.*count*      | [.count]()
-| DBH.*begin*      | [.begin]()
-| DBH.*commit*     | [.commit]()
-| DBH.*rollback*   | [.rollback]()
-| DBH.*done*       | [.done]()
 
+| DBH              | Shorthand to...   
+|------------------|-------------------
+| `DBH.exec`       | [`.exec`](#execstring-query---objectarray-data----promise)
+| `DBH.fetchOne`   | [`.fetchOne`](#fetchonestring-query---objectarray-data----promise)
+| `DBH.fetchAll`   | [`.fetchAll`](#fetchallstring-query---objectarray-data----promise)
+| `DBH.fetchColumn`| [`.fetchColumn`](#fetchcolumnstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.fetchScalar`| [`.fetchScalar`](#fetchscalarstring-query---objectarray-data--string-columnname-----promise)
+| `DBH.insert`     | [`.insert`](#insertstring-table-object-row---string-returning----promise)
+| `DBH.update`     | [`.update`](#updatestring-table-object-data-object-where---string-returning----promise)
+| `DBH.delete`     | [`.delete`](#deletestring-table-object-where---string-returning----promise)
+| `DBH.exists`     | [`.exists`](#existsstring-table-object-where---promise)
+| `DBH.count`      | [`.count`](#countstring-table---object-where----promise)
+| `DBH.begin`      | [`.begin`](#begin---promise)
+| `DBH.commit`     | [`.commit`](#commit---promise)
+| `DBH.rollback`   | [`.rollback`](#rollback---promise)
+| `DBH.done`       | [`.done`](#done---void)
 _____
 
 ####```new DBH(string conextionString [ , object driver ]) -> DBH```
@@ -213,7 +256,7 @@ Instantiates the database handler.
   - a socket path, with a specific database, ```like /var/run/postgresql a_db_name```
   - a socket connection string ```socket:/some/path/?db=database_name&encoding=utf8```
 - *optional object* **driver**
-  - The result of call ```require('pg')```.
+  - The result of call `require('pg')` or [`require('pg').native`](https://github.com/brianc/node-postgres#native-bindings).
 
 DBH is a lightweight wrapper to [```pg```](https://github.com/brianc/node-postgres) module.
 This use a [pool of connections](https://github.com/brianc/node-postgres#client-pooling).
@@ -247,7 +290,7 @@ Instantiates the database handler.
     - default value: `false`
     - whether to try SSL/TLS to connect to server
 - *optional object* **driver**
-  - The result of call ```require('pg')```.
+  - The result of call `require('pg')` or [`require('pg').native`](https://github.com/brianc/node-postgres#native-bindings).
 
 #####Example:
 ```javascript
@@ -263,22 +306,22 @@ _____
 Get a connection from the pool.
 
 - *optional object* **scope**
-  - default value: ```{}```
-  - The value that is in ```.scope``` in ever promise callback.
+  - default value: `{}`
+  - The value that is in `.scope` in ever promise callback.
 
-When you call ```dbh.conn()``` you get a promise that will be fulfilled when 
+When you call `dbh.conn()` you get a promise that will be fulfilled when 
 a connection from the pool of connections is released.
 
-Is **extremely important** that the last promise call the [```.done```]() method.
+Is **extremely important** that the last promise call the [`.done`]() method.
 
 ```javascript
 dbh.conn()
     .exec(...)
     .then(DBH.update(...))
-    .then(DBH.done, DBH.done) // Here we call the .done
-                              // then the connection is
-                              // release to the
-                              // connection pool
+    .then(DBH.done(), DBH.done()) // Here we call the .done
+                                  // then the connection is
+                                  // release to the
+                                  // connection pool
 ```
 
 The best way to do this is using [```Promise.using```](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise),
@@ -315,12 +358,12 @@ using(dbh.conn(this), function (conn) {
 })
 ```
 
-_____
+___
 
 ##Connection
-_____
+___
 
-###```.exec(string query [ , object|array data ]) -> Promise```
+###`.exec(string query [ , object|array data ]) -> Promise`
 Send the given SQL query to the database.
 
 - *string* **query**:
@@ -328,86 +371,85 @@ Send the given SQL query to the database.
 - *optional object|array* **data**:
   - The data to use with the `query` if it is [parameterized](#parameterized-queries)
 
-Returns a object with this parameters:
-- *string* **command**:
-  - The sql command that was executed (e.g. "SELECT", "UPDATE", etc.)
-- *int* **rowCount**:
-  - The number of rows affected by the SQL statement [(more information)](http://www.postgresql.org/docs/8.1/static/libpq-exec.html#LIBPQ-EXEC-NONSELECT)
-- **oid**:
-  - the oid returned
-- *array* **rows**:
-  - an array of rows
+Returns a [`result object`](#result-object)
 
 ####Example:
 #####Simple Query:
 ```javascript
-conn
-.exec('select * from book where price <= 20.0')
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= 20.0')
 })
+.then(function (result) {
+  console.log(result)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+})
+
 ```
 #####[Indexed Parameterized Query]()
 ```javascript
-conn
-.exec('select * from book where price <= $1', [20.0])
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= $1', [20.0])
+})
+.then(function (result) {
+  console.log(result)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 #####[Named Parameterized Query]()
 ```javascript
-conn
-.exec('select * from book where price <= $price', { price: 20.0 })
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
+using(dbh.conn(), function (conn) {
+  return conn.exec('select * from book where price <= $price', {
+    price: 20.0
+  })
+})
+.then(function (result) {
+  console.log(result)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
-_____
+___
 
 ###```conn.exec(object query) -> Promise```
 Execute the query.
 
-> **See:** [query object]()
+> **See:** [query object](#query-object)
 
 ```javascript
-conn
-.exec({
+using(dbh.conn(), function (conn) {
+  return conn.exec({
     text: 'select * from book where author_id=$1',
     values : [ 32 ]
+  })
 })
-.then(function (resultset) {
-    console.log(resultset)
-    // { rows: [{item1}, ...], count: 1,  }
+.then(function (result) {
+  console.log(result)
+  // { rows: [{item1}, ...], rowCount: 0, command: 'SELECT', ...  }
 })
 ```
 ___
 
 ###`.fetchOne(string query [ , object|array data ]) -> Promise`
-Shortcut to `result.rows[0]` of [`.exec`]()
+Shortcut to `result.rows[0]` of [`.exec`](#execstring-query---objectarray-data----promise)
 
 - *string* **query**:
   - the SQL command to send to the database
 - *optional object|array* **data**:
-  - The data to use with the `query` if it is [parameterized](#parameterized-queries)
+  - The data to use with the `query` if it is [`parameterized`](#parameterized-queries)
 
-Returns the first tupla as ```object```.
+Returns the first row as ```object```.
 
 ####Example
 #####With `.fetchOne`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchOne(
+  return conn.fetchOne(
     'select * from planet where habitants > $1 limit 1'
     , [3000]
   )
-  .then(function (planet) {
-    console.log(planet)
-    // { name: 'Kolobo', habitants:... }
-  })
+})
+.then(function (planet) {
+  console.log(planet)
+  // { name: 'Kolobo', habitants:... }
 })
 ```
 #####Without `.fetchOne`
@@ -417,13 +459,11 @@ using(dbh.conn(), function (conn) {
     'select * from planet where habitants > $1 limit 1'
     , [3000]
   )
-  .then(function (result) {
-    return result.rows[0]
-  })
-  .then(function (planet) {
-    console.log(planet)
-    // { name: 'Kolobo', habitants:... }
-  })
+  .then(DBH.one()) // extra step
+})
+.then(function (planet) {
+  console.log(planet)
+  // { name: 'Kolobo', habitants:... }
 })
 ```
 
@@ -432,7 +472,7 @@ using(dbh.conn(), function (conn) {
 ___
 
 ###`.fetchAll(string query [ , object|array data ]) -> Promise`
-Shortcut to `result.rows` of [`.exec`]()
+Shortcut to `result.rows` of [`.exec`](#execstring-query---objectarray-data----promise)
 
 - *string* **query**:
   - the SQL command to send to the database
@@ -445,24 +485,25 @@ Returns an array of tuplas.
 #####With `.fetchAll`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchAll('select * from planet where habitants > $1', [3000])
-    .then(function (planets) {
-      console.log(planets)
-      // [{ name: 'Kolobo', habitants:... }, ...]
-    })
+  return conn.fetchAll('select * from planet where habitants > $1', [3000])
+})
+.then(function (planets) {
+  console.log(planets)
+  // [{ name: 'Kolobo', habitants:... }, ...]
 })
 ```
 #####Without `.fetchAll`
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.exec('select * from planet where habitants > $1', [3000])
+  return conn.exec('select * from planet where habitants > $1', [3000])
     .then(function (result) {
+      // extra step
       return result.rows
     })
-    .then(function (planets) {
-      console.log(planets)
-      // [{ name: 'Kolobo', habitants:... }, ...]
-    })
+})
+.then(function (planets) {
+  console.log(planets)
+  // [{ name: 'Kolobo', habitants:... }, ...]
 })
 ```
 ___
@@ -481,18 +522,18 @@ In this query:
 SELECT name FROM account
 ```
 The `result.rows` is:
-```
+```javascript
 [{ name: 'Name1'}, { name: 'Name2' }, { name: 'Name3' }, ...]
 ```
-Instead, fetchColumn returns
-```
+Instead, `.fetchColumn` returns
+```javascript
 [ 'Name1', 'Name2', 'Name3', ...]
 ```
 
 ####Example
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.fetchColumn('select name from planet where habitants > $1', [3000])
+  return conn.fetchColumn('select name from planet where habitants > $1', [3000])
     .then(function (planets) {
       console.log(planets)
       // [ 'Kolobo', 'Saturn', 'Ponnyland' ]
@@ -534,14 +575,24 @@ Insert the `row` in the `table`.
   - the data to return. Useful for know autogenerated values.
   - is comma separated for each column name, e.g. `*` or, `name,birthday`.
 
-####Example
+If `returning` is *undefined*, then return *undefined*, 
+otherwise an *object* with the attributes described  in `returning`.
+
+####Examples:
+#####Simple:
 ```javascript
 using(dbh.conn(), function (conn) {
-  conn.insert('planet', { name: 'Mart', habitants: 343 }, 'id')
-    .then(function (id) {
-      console.log(id)
-      // 435
-    })
+  return conn.insert('planet', { name: 'Mart', habitants: 343 })
+})
+```
+#####To know the autogenerated `id`:
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn.insert('planet', { name: 'Mart', habitants: 343 }, 'id')
+})
+.then(function (planet) {
+  console.log(planet.id)
+  // 435
 })
 ```
 ___
@@ -734,6 +785,40 @@ using(dbh.conn(), function (conn) {
 ```
 [`test`]() [`test autorollback`]()
 ___
+###`.done() -> void`
+Return the conextion to the pool of conexions.
+
+To use *only* if you are not using [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise).
+
+> **Recommendation**: Ever use `Promise.using`, in this way `.done` is called automatically.
+
+####Examples:
+#####With `Promise.using`
+```javascript
+using(dbh.conn(), function (conn) {
+  return conn.exec('...')
+  // We NOT use `conn.done()` because 
+  // we are using `Promise.using`.
+  // Therefore `.done` is called automatically
+  // by the library.
+})
+```
+#####Without `Promise.using`
+```javascript
+dbh
+.conn()
+.exec('...')
+.then(function () {
+  return this.done();
+}, function () {
+  return this.done();
+})
+// or .then(DBH.done(), DBH.done())
+
+// Here we use `conn.done` because we
+// are not inside the `Promise.using`
+```
+___
 ##utils
 
 ###sanitize.js
@@ -748,22 +833,140 @@ or with DBH:
 var DBH = require('dbh-pg'),
     sanitize = DBH.sanitize
 ```
+[`test`](test/sanitize.js#L23)
 ___
 
 ####`.escape(string sql) -> string`
-TODO
+Escape the given sql.
+
+#####Example:
+```javascript
+sanitize.escape('" or 1=1 -- ')
+-> '\" or 1=1 -- '
+````
+
+[`test`](test/sanitize.js#L29)
 ___
 
-####`.array(array array, object whitelist) -> array
-TODO
+####`.array(array array, object whitelist) -> array`
+Filter the given `array` with the `whitelist`.
+
+- *array* **array**:
+  - the array to filter.
+- *object* **whitelist**:
+  - an object in that the `keys` are compared with each `item` in the array.
+
+#####Rules for sanitize
+One item in the **array** will be included in the returning *array* 
+if matches with some `key` in the **whitelist** and:
+
+######a) The `value` of the `key` in the **whitelist** is `true`
+```javascript
+sanitize.array(['red', 'blue'], { red: true, blue: false })
+-> ['red']
+````
+######b) The `value` of the `key` in the **whitelist** is `string`
+In this case the `ìtem` is overwrited by the `string`.
+```javascript
+sanitize.array(['red', 'blue'], { red: true, blue: 'azul' })
+-> ['red', 'azul']
+````
+######c) The `value` of the `key` in the **whitelist** is a function that returns (a), (b) or (c).
+```javascript
+sanitize.array(['name', 'email'], {
+  name: 'true',
+  email: function (item) {
+    // admit the email only if isAdmin is true
+    return isAdmin();
+  }
+})
+-> ['name'] // assuming that isAdmin() return false
+````
+
+#####Example:
+Creation of safe `SELECT` where the fields come from the user input.
+```javascript
+function makeSelect(userInput, isAdmin) {
+  var fields = sanitize.array(userInput, {
+    name: 'a.name',
+    email: function (item) { return isAdmin ? 'a.email' : false }
+  })
+  return = 'select '
+    + fields.join(',')
+    + ' from account a'
+}
+
+makeSelect(['name', 'pass'], true)
+-> 'select u.name from account a'
+// because the pass is not in the whitelist, 
+// then is not in the returning array
+````
+
+[`test`](test/sanitize.js#L77-128)
 ___
 
 ####`.object(object object, object whitelist) -> object`
-TODO
+Filter the given **object** with the **whitelist**.
+
+- *object* **object**:
+  - the object to filter.
+- *object* **whitelist**:
+  - an object in that the `keys` are compared with each `key` in the **object**.
+
+#####Rules for sanitize
+One item in the **object** will be included in the returning *object* 
+if their `key` matches with some `key` in the **whitelist** and:
+
+######a) The `value` of the `key` in the **whitelist** is `true`
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, { color: true, type: false })
+-> { color: 'yellow' }
+````
+######b) The `value` of the `key` in the **whitelist** is `string`
+In this case the `key` of the item is overwrited by the `string`.
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, { color: true, type: 'font' })
+-> { color: 'yellow', font: 'comic sans' }
+````
+######c) The `value` of the `key` in the **whitelist** is a function that returns (a), (b) or (c).
+```javascript
+sanitize.object({ color: 'yellow', type: 'comic sans' }, {
+  color: 'true',
+  type: function (key, value) {
+    // admit the type only if isDesigner is true
+    return isDesigner();
+  }
+})
+-> { color: 'yellow' } // assuming that isDesigner() return false
+````
+
+#####Example:
+Creation of safe `SELECT` where the `WHERE` come from the user input.
+```javascript
+function makeSelect(userInput) {
+  var where = sanitize.object(userInput, {
+    name: 'a.name',
+    // admit only if the email is from the company
+    email: function (key, value) { return /@mycompany/.test(value) ? 'a.email' : false }
+  })
+  return = 'select a.id, a.name from account a where '
+    + sql.toNamed(where)
+}
+
+makeSelect({ name: 'Canela', pass: '123', email: 'canela@example.com' })
+-> 'select a.id, a.name from account a where a.name=$name'
+// because the pass is not in the whitelist, 
+// then is not in the returning array.
+// email is not because not match with the regExp /@mycompany/
+````
+
+[`test`](test/sanitize.js#L130-193)
 ___
 
 ####`.sort(object sort, object whitelist) -> object`
 TODO
+
+[`test`](test/sanitize.js#L195-247)
 ___
 ###sql.js
 Utils to create SQL chunks.
@@ -782,7 +985,7 @@ ___
 ####`.limit(int limit [ , int offset ]) -> string`
 Safe construction of SQL `limit` string.
 
-- *int* **limit*
+- *int* **limit**
 - *optional int* **offset**
 
 #####Examples:
@@ -839,7 +1042,7 @@ sql.orderBy([
 -> ' ORDER BY editorial ASC '
 ```
 ```javascript
-DBH.sqlLimit({ })
+DBH.orderBy([])
 -> ' '
 ```
 _____
@@ -863,8 +1066,55 @@ sql.orderBy({  })
 ```
 ___
 ####`.toNamed(object object [ , string separator [ , string inSeparator ] ]) -> string`
-TODO
+Format the object to [`named query`](#named-placeholders) chunk.
+
+- *object* **object**
+- *optional string* **separator**:
+  - default: `'AND'`
+- *optional string* **inSeparator**:
+  - default: `'='`
+
+#####Examples:
+```javascript
+sql.toNamed({ name: 'Bill', last: 'Puertas' })
+-> ' name=$name AND last=$last '
+```
+
+```javascript
+sql.toNamed({ name: 'Bill', last: 'Puertas' }, ',')
+-> ' name=$name , last=$last '
+```
+[`definition`](lib/sql.js#L43-59)
 ___
 ####`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`
-TODO
+Format the object to [`indexed query`](#index-placeholders) chunk.
+
+- *object* **object**
+- *array* **refArray**:
+  - an array that will be mutated adding the values according to the index in the result string
+- *optional string* **separator**:
+  - default: `'AND'`
+- *optional string* **inSeparator**:
+  - default: `'='`
+
+#####Examples:
+```javascript
+var arr = []
+sql.toIndexed({ name: 'Bill', last: 'Puertas' })
+-> ' name=$1 AND last=$2 '
+
+console.log(arr)
+-> ['Bill', 'Puertas']
+```
+
+```javascript
+var arr = []
+sql.toIndexed({ name: 'Bill', last: 'Puertas' }, ',')
+-> ' name=$1 , last=$2 '
+
+console.log(arr)
+-> ['Bill', 'Puertas']
+```
+[`definition`](lib/sql.js#L61-79)
+
 [pg]: https://www.npmjs.org/package/pg

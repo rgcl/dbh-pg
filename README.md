@@ -1,4 +1,5 @@
-
+> **WARNING!** This doc is for *v2.x*, the *v1.x* was experimental.
+> The *v2.x* is not ready yet
 
 #![BDH-PG](logo.png?raw=true)
 
@@ -7,35 +8,65 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
 
-Database Handler for PostgreSQL writer upon [pg](https://github.com/brianc/node-postgres) and [bluebird](https://github.com/petkaantonov/bluebird).
+Lightweight Database Handler for PostgreSQL writer upon [node-postgres][] and [bluebird][].
 
-## Quick example
+##Why?
+Because [node-postgres] is too low level and is not funny
+to write deeply nested functions for commons task such as create transactions.
+
+##Features
+- [Promises/A+](https://promisesaplus.com/) style by [bluebird][].
+- [Full Documented API](API.md#api-reference).
+- [Full Tested API](test/).
+- Made with simple and clean code.
+- Extra utils for [sanitization](API.md#sanitizejs) and [sql creation](API.md#sqljs).
+
+##Installation
+
+The latest stable version:
+```sh
+$ npm install dbh-pg
+```
+It is recommended that you also install [bluebird][] for use `Promise.using`:
+```sh
+$ npm install bluebird
+```
+##Usage
+
+> 1. Require the dependencies.
+> 2. [Instantiate](API.md#new-dbhstring-conextionstring---object-driver----dbh) the DBH (Internally creates a connection pool).
+> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) to get a connection from the pool and then auto release it. Is important that the callback function returns the connection promise.
 
 ```javascript
 // require dependences
 var DBH = require('dbh-pg'),
     Promise = require('bluebird'),
-    using = Promise.using;
+    using = Promise.using
     
 // instantiate the database
-var db = new DBH('postgres://postgres@localhost/db2test');
+var db = new DBH('postgres://postgres@localhost/db2test')
 
 using(db.conn(), function (conn) {
     // a connection from the pool
-    conn
+    return conn
     .fetchOne('select * from user where id=$1', [10])
     .then(function (user) {
-        console.log(user); // {id:10, name:...}
-    });
-}); // automatic release the connection to pool
+        console.log(user) // {id:10, name:...}
+    })
+}) // automatic release the connection to pool
 ```
+[`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise)
 
-### Transactions
+###Transactions
+
+> 1. Call `conn.begin` to start the transaction
+> 2. Use the transaction
+> 3. Explicit call `conn.commit`, if not auto rollback is applied before release the connection to the pool.
 
 ```javascript
 // send 10 coins from user_id=3 to user_id=4
 using(db.conn(), function (conn) {
-    conn
+    return conn
     .begin() // start transaction
     .then(function () {
         // 'this' points to the created connection 'conn'
@@ -54,27 +85,27 @@ using(db.conn(), function (conn) {
         );
     }).then(function () {
         // commit the transaction!
-        this.commit();
+        return this.commit();
     });
 });
 ```
-
-## Parallel task
+[`conn.begin`](API.md#begin---promise) [`conn.exec`](API.md#execstring-query---objectarray-data----promise) [`conn.commit`](API.md#commit---promise)
+###Parallel task
 
 ```javascript
 // print array of data (from query) and the total items in the table
 using(db.conn(), db.conn(), function (conn1, conn2) {
-    Promise.props({
-        items : conn1.fetchAll('select * from user limit 10'),
-        total : conn2.fetchOne('select count(*) from user')
+    return Promise.join(
+        conn1.fetchAll('select * from user limit 10'),
+        conn2.fetchOne('select count(*) from user')
+    )
+    .then(function (items, total) {
+        console.log(items, total) // array of objects, number
     })
-    .then(function (data) {
-        console.log(data.items, data.total); // array of objects, number
-    })
-});
+})
 ```
 
-## Using Shorthands
+###Using Shorthands
 
 ```javascript
 // shorthands are static methods in the DBH 'class'.
@@ -92,92 +123,49 @@ using(db.conn(), function (conn) {
         set coins = coins + 10 \
         where user_id=$1',
         [4]
-    )).then(DBH.commit());
-});
+    )).then(DBH.commit())
+})
 ```
-
-## Using objects as replacement
+[`DBH shorthands`](API.md#dbhshorthandargs---function)
+###Using objects as replacement
 
 ```javascript
 // This is the first example, note that
 // instead of $1 this uses $id
 using(db.conn(), function (conn) {
-    conn
-    .fetchOne('select * from user where id=$id', {
-        id : 10
-    })
+    return conn
+    .fetchOne('select * from user where id=$id', { id : 10 })
     .then(function (user) {
-        console.log(user);
-    });
-});
+        console.log(user)
+    })
+})
 ```
-
-## Prepared Statements
+[`named parameterized queries`](API.md#named-placeholders)
+###Prepared Statements
 
 ```javascript
 // DBH.prepare receives a SQL statement and return function that receives the
 // replacement as an array of params.
 // Note that DBH.prepare can be used outside the 'using'.
-var prepared = DBH.prepare('select name from city where country_code=$1');
+var prepared = DBH.prepare('insert into country_code values($1)')
 
 using(db.conn(), function (conn) {
     var me = this;
-    ['ar', 'cl', 'jp', 'pe', 'col'].forEach(function (code) {
-        me.exec(prepared(code));
+    var promises = ['ar', 'cl', 'jp', 'pe', 'co'].map(function (code) {
+        return me.exec(prepared(code))
     })
-});
+    return Promise.all(promises)
+})
 ```
+[`DBH.prepare`](API.md#dbhpreparestring-query---function)
+##Contributing
+**We ♥ contributions**
 
-## Complex example
+Please create a (tested) pull request :)
 
-```javascript
-// limit the number of users to 1000 and send an email
-// notifying affected users in a transaction.
-var DBH = require('dbh-pg'),
-    Promise = require('bluebird'),
-    using = Promise.using,
-    db = new DBH('postgres://postgres@localhost/db2test');
-    
-var nodemailer = require('nodemailer'), // not included, used for this example only
-    transporter = nodemailer.createTransport(),
-    sendMail = Promise.promisify(transporter.sendMail);
-    
-using(db.conn(), function (conn) {
+##License
 
-    var updateAmountTo1000 = DBH.prepare(
-        'update user set amount = 1000 where email=$email'
-    );
-    
-    conn
-    .begin()
-    .then(DBH.fetchAll('select email, amount from user where amount > $1', [1000]))
-    .then(function (users) {
-        // map is because users is an array
-        var promises = users.map(function (user) {
-            return this.exec(updateAmountTo1000(user))
-                .then(function () {
-                    sendMail({
-                        from : 'no-reply@example.com',
-                        to : user.email,
-                        subject : ':P',
-                        text : 'You had $ '
-                            + user.amount
-                            + ' in your account. Sorry'
-                    })
-                });
-        }.bind(this));
-        
-        return Promise.all(promises);
-    })
-    .then(DBH.commit);
-    
-});
-```
+[MIT LICENSE](LICENSE)
 
-## TODO
-
-Full docs
-
-## License
-
-MIT
+[node-postgres]: https://github.com/brianc/node-postgres#node-postgres
+[bluebird]: https://github.com/petkaantonov/bluebird#introduction
