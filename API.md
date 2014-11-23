@@ -256,7 +256,7 @@ Instantiates the database handler.
   - a socket path, with a specific database, ```like /var/run/postgresql a_db_name```
   - a socket connection string ```socket:/some/path/?db=database_name&encoding=utf8```
 - *optional object* **driver**
-  - The result of call ```require('pg')```.
+  - The result of call `require('pg')` or [`require('pg').native`](https://github.com/brianc/node-postgres#native-bindings).
 
 DBH is a lightweight wrapper to [```pg```](https://github.com/brianc/node-postgres) module.
 This use a [pool of connections](https://github.com/brianc/node-postgres#client-pooling).
@@ -290,7 +290,7 @@ Instantiates the database handler.
     - default value: `false`
     - whether to try SSL/TLS to connect to server
 - *optional object* **driver**
-  - The result of call ```require('pg')```.
+  - The result of call `require('pg')` or [`require('pg').native`](https://github.com/brianc/node-postgres#native-bindings).
 
 #####Example:
 ```javascript
