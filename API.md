@@ -195,7 +195,7 @@ using(dbh.conn(), function (conn) {
   // here we have only the item
 })
 ```
-[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/DBH.js#L66-70)
+[`definition`](lib/DBH.js#L66-70)
 ___
 ####```DBH.{shorthand}({args}) -> Function```
 
@@ -833,7 +833,7 @@ or with DBH:
 var DBH = require('dbh-pg'),
     sanitize = DBH.sanitize
 ```
-[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L23)
+[`test`](test/sanitize.js#L23)
 ___
 
 ####`.escape(string sql) -> string`
@@ -845,7 +845,7 @@ sanitize.escape('" or 1=1 -- ')
 -> '\" or 1=1 -- '
 ````
 
-[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L29)
+[`test`](test/sanitize.js#L29)
 ___
 
 ####`.array(array array, object whitelist) -> array`
@@ -902,7 +902,7 @@ makeSelect(['name', 'pass'], true)
 // then is not in the returning array
 ````
 
-[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L77-128)
+[`test`](test/sanitize.js#L77-128)
 ___
 
 ####`.object(object object, object whitelist) -> object`
@@ -960,13 +960,13 @@ makeSelect({ name: 'Canela', pass: '123', email: 'canela@example.com' })
 // email is not because not match with the regExp /@mycompany/
 ````
 
-[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L130-193)
+[`test`](test/sanitize.js#L130-193)
 ___
 
 ####`.sort(object sort, object whitelist) -> object`
 TODO
 
-[`test`](https://github.com/roro89/dbh-pg/blob/master/test/sanitize.js#L195-247)
+[`test`](test/sanitize.js#L195-247)
 ___
 ###sql.js
 Utils to create SQL chunks.
@@ -1084,7 +1084,7 @@ sql.toNamed({ name: 'Bill', last: 'Puertas' })
 sql.toNamed({ name: 'Bill', last: 'Puertas' }, ',')
 -> ' name=$name , last=$last '
 ```
-[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/sql.js#L43-59)
+[`definition`](lib/sql.js#L43-59)
 ___
 ####`.toIndexed(object object, array refArray [ , string separator [ , string inSeparator ] ]) -> string`
 Format the object to [`indexed query`](#index-placeholders) chunk.
@@ -1115,6 +1115,6 @@ sql.toIndexed({ name: 'Bill', last: 'Puertas' }, ',')
 console.log(arr)
 -> ['Bill', 'Puertas']
 ```
-[`definition`](https://github.com/roro89/dbh-pg/blob/master/lib/sql.js#L61-79)
+[`definition`](lib/sql.js#L61-79)
 
 [pg]: https://www.npmjs.org/package/pg
