@@ -141,7 +141,7 @@ describe('DBH', function () {
         });
 
         it('.limit(3, -5) -> " LIMIT 3 "', function () {
-            assert.equal(sql.limit(3, 5), ' LIMIT 3 ');
+            assert.equal(sql.limit(3, -5), ' LIMIT 3 ');
         });
 
         it('.limit(3, -5.2) -> " LIMIT 3 "', function () {
@@ -189,7 +189,7 @@ describe('DBH', function () {
         });
 
         it('.orderBy([{ attr: "name", asc: false }])', function () {
-            assert.equal(sql.orderBy([{ attr: 'name', asc: true }]), ' ORDER BY name DESC ');
+            assert.equal(sql.orderBy([{ attr: 'name', asc: false }]), ' ORDER BY name DESC ');
         });
 
         it('.orderBy([sortRule1, sortRule2])', function () {
@@ -211,7 +211,7 @@ describe('DBH', function () {
         it('.orderBy([{ attr: "a; drop table users -- " }]) -> " ORDER BY a; drop table users -- ASC "', function () {
             assert.equal(sql.orderBy([
                 { attr: 'a; drop table users -- ' }
-            ]), ' ORDER BY a; drop table users -- ASC ');
+            ]), ' ORDER BY a; drop table users --  ASC ');
         });
 
     });
