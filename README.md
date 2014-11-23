@@ -1,4 +1,4 @@
-> **WARNING!** This doc is for v2.x, the v1.x was experimental
+> **WARNING!** This doc is for *v2.x*, the *v1.x* was experimental.
 
 #![BDH-PG](logo.png?raw=true)
 
@@ -7,39 +7,54 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
 
-Lightweight Database Handler for PostgreSQL writer upon [node-postgres][] and [bluebird](https://github.com/petkaantonov/bluebird).
+Lightweight Database Handler for PostgreSQL writer upon [node-postgres][] and [bluebird][].
 
 ##Why?
 Because [node-postgres] is too low level and is not funny
 to write deeply nested functions for commons task such as create transactions.
 
 ##Features
-- [Promises/A+](https://promisesaplus.com/) style by [bluebird](https://github.com/petkaantonov/bluebird).
-- [Full Documented API](API.md).
+- [Promises/A+](https://promisesaplus.com/) style by [bluebird][].
+- [Full Documented API](API.md#api-reference).
 - [Full Tested API](test/).
 - Made with simple and clean code.
-- extra utils for [sanitization](API.md#sanitizejs) and [sql creation](API.md#sqljs).
+- Extra utils for [sanitization](API.md#sanitizejs) and [sql creation](API.md#sqljs).
 
-## Quick examples
+##Installation
+
+The latest stable version:
+```bash
+$ npm install dbh-pg --save
+```
+It is recommended that you also install [bluebird][] for use `Promise.using`:
+```bash
+$ npm install dbh-pg --save
+```
+##Usage
+
+> 1. Require the dependencies.
+> 2. [Instantiate](API.md#new-dbhstring-conextionstring---object-driver----dbh) the DBH (Internally creates a connection pool).
+> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) to get a connection from the pool and then auto release it.
 
 ```javascript
 // require dependences
 var DBH = require('dbh-pg'),
     Promise = require('bluebird'),
-    using = Promise.using;
+    using = Promise.using
     
 // instantiate the database
-var db = new DBH('postgres://postgres@localhost/db2test');
+var db = new DBH('postgres://postgres@localhost/db2test')
 
 using(db.conn(), function (conn) {
     // a connection from the pool
-    conn
+    return conn
     .fetchOne('select * from user where id=$1', [10])
     .then(function (user) {
-        console.log(user); // {id:10, name:...}
-    });
-}); // automatic release the connection to pool
+        console.log(user) // {id:10, name:...}
+    })
+}) // automatic release the connection to pool
 ```
+> see [`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise) doc.
 
 ###Transactions
 
@@ -75,12 +90,12 @@ using(db.conn(), function (conn) {
 ```javascript
 // print array of data (from query) and the total items in the table
 using(db.conn(), db.conn(), function (conn1, conn2) {
-    Promise.props({
-        items : conn1.fetchAll('select * from user limit 10'),
-        total : conn2.fetchOne('select count(*) from user')
-    })
-    .then(function (data) {
-        console.log(data.items, data.total); // array of objects, number
+    Promise.join(
+        conn1.fetchAll('select * from user limit 10'),
+        conn2.fetchOne('select count(*) from user')
+    )
+    .then(function (items, total) {
+        console.log(items, total); // array of objects, number
     })
 });
 ```
@@ -147,4 +162,5 @@ Full docs
 
 MIT
 
-[node-postgres]: https://github.com/brianc/node-postgres
+[node-postgres]: https://github.com/brianc/node-postgres#node-postgres
+[bluebird]: https://github.com/petkaantonov/bluebird#introduction
