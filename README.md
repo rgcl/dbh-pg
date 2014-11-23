@@ -24,17 +24,17 @@ to write deeply nested functions for commons task such as create transactions.
 
 The latest stable version:
 ```bash
-$ npm install dbh-pg --save
+$ npm install dbh-pg
 ```
 It is recommended that you also install [bluebird][] for use `Promise.using`:
 ```bash
-$ npm install dbh-pg --save
+$ npm install bluebird
 ```
 ##Usage
 
 > 1. Require the dependencies.
 > 2. [Instantiate](API.md#new-dbhstring-conextionstring---object-driver----dbh) the DBH (Internally creates a connection pool).
-> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) to get a connection from the pool and then auto release it.
+> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) to get a connection from the pool and then auto release it. Is important that the callback function returns the connection promise.
 
 ```javascript
 // require dependences
@@ -48,40 +48,44 @@ var db = new DBH('postgres://postgres@localhost/db2test')
 using(db.conn(), function (conn) {
     // a connection from the pool
     return conn
-    .fetchOne('select * from user where id=$1', [10])
-    .then(function (user) {
-        console.log(user) // {id:10, name:...}
-    })
+        .fetchOne('select * from user where id=$1', [10])
+        .then(function (user) {
+            console.log(user) // {id:10, name:...}
+        })
 }) // automatic release the connection to pool
 ```
-> see [`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise) doc.
+[`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise)
 
 ###Transactions
+
+> 1. Call `conn.begin` to start the transaction
+> 2. Use the transaction
+> 3. Explicit call `conn.commit`, if not auto rollback is applied before release the connection to the pool.
 
 ```javascript
 // send 10 coins from user_id=3 to user_id=4
 using(db.conn(), function (conn) {
-    conn
-    .begin() // start transaction
-    .then(function () {
-        // 'this' points to the created connection 'conn'
-        return this.exec(
-            'update wallet \
-            set coins = coins - 10 \
-            where user_id=$1',
-            [3]
-        );
-    }).then(function () {
-        return this.exec(
-            'update wallet \
-            set coins = coins + 10 \
-            where user_id=$1',
-            [4]
-        );
-    }).then(function () {
-        // commit the transaction!
-        this.commit();
-    });
+    return conn
+        .begin() // start transaction
+        .then(function () {
+            // 'this' points to the created connection 'conn'
+            return this.exec(
+                'update wallet \
+                set coins = coins - 10 \
+                where user_id=$1',
+                [3]
+            );
+        }).then(function () {
+            return this.exec(
+                'update wallet \
+                set coins = coins + 10 \
+                where user_id=$1',
+                [4]
+            );
+        }).then(function () {
+            // commit the transaction!
+            return this.commit();
+        });
 });
 ```
 
@@ -90,14 +94,14 @@ using(db.conn(), function (conn) {
 ```javascript
 // print array of data (from query) and the total items in the table
 using(db.conn(), db.conn(), function (conn1, conn2) {
-    Promise.join(
+    return Promise.join(
         conn1.fetchAll('select * from user limit 10'),
         conn2.fetchOne('select count(*) from user')
     )
     .then(function (items, total) {
-        console.log(items, total); // array of objects, number
+        console.log(items, total) // array of objects, number
     })
-});
+})
 ```
 
 ###Using Shorthands
@@ -118,8 +122,8 @@ using(db.conn(), function (conn) {
         set coins = coins + 10 \
         where user_id=$1',
         [4]
-    )).then(DBH.commit());
-});
+    )).then(DBH.commit())
+})
 ```
 
 ###Using objects as replacement
@@ -133,9 +137,9 @@ using(db.conn(), function (conn) {
         id : 10
     })
     .then(function (user) {
-        console.log(user);
-    });
-});
+        console.log(user)
+    })
+})
 ```
 
 ###Prepared Statements
@@ -144,23 +148,25 @@ using(db.conn(), function (conn) {
 // DBH.prepare receives a SQL statement and return function that receives the
 // replacement as an array of params.
 // Note that DBH.prepare can be used outside the 'using'.
-var prepared = DBH.prepare('select name from city where country_code=$1');
+var prepared = DBH.prepare('insert into country_code values($1)')
 
 using(db.conn(), function (conn) {
     var me = this;
-    ['ar', 'cl', 'jp', 'pe', 'col'].forEach(function (code) {
-        me.exec(prepared(code));
+    var promises = ['ar', 'cl', 'jp', 'pe', 'co'].map(function (code) {
+        return me.exec(prepared(code))
     })
-});
+    return Promise.all(promises)
+})
 ```
 
-##TODO
+##Contributing
+**We ♥ contributions**
 
-Full docs
+Please create a (tested) pull request :)
 
 ##License
 
-MIT
+[MIT LICENSE](LICENSE)
 
 [node-postgres]: https://github.com/brianc/node-postgres#node-postgres
 [bluebird]: https://github.com/petkaantonov/bluebird#introduction
