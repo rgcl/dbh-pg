@@ -194,14 +194,14 @@ describe('DBH', function () {
 
         it('.orderBy([sortRule1, sortRule2])', function () {
             assert.equal(sql.orderBy([
-                { attr: 'name', asc: true }
+                { attr: 'name', asc: true },
                 { attr: 'last', asc: false }
             ]), ' ORDER BY name ASC, last DESC ');
         });
 
         it('.orderBy([sortRule1, sortRule2])', function () {
             assert.equal(sql.orderBy([
-                { attr: 'name', asc: true }
+                { attr: 'name', asc: true },
                 { attr: 'last' }
             ]), ' ORDER BY name ASC, last ASC ');
         });
