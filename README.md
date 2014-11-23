@@ -1,4 +1,4 @@
-
+> **WARNING!** This doc is for v2.x, the v1.x was experimental
 
 #![BDH-PG](logo.png?raw=true)
 
@@ -7,9 +7,20 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://secure.travis-ci.org/sapienlab/dbh-pg.png)](http://travis-ci.org/sapienlab/dbh-pg)
 
-Database Handler for PostgreSQL writer upon [pg](https://github.com/brianc/node-postgres) and [bluebird](https://github.com/petkaantonov/bluebird).
+Lightweight Database Handler for PostgreSQL writer upon [node-postgres][] and [bluebird](https://github.com/petkaantonov/bluebird).
 
-## Quick example
+##Why?
+Because [node-postgres] is too low level and is not funny
+to write deeply nested functions for commons task such as create transactions.
+
+##Features
+- [Promises/A+](https://promisesaplus.com/) style by [bluebird](https://github.com/petkaantonov/bluebird).
+- [Full Documented API](API.md).
+- [Full Tested API](test/).
+- Made with simple and clean code.
+- extra utils for [sanitization](API.md#sanitizejs) and [sql creation](API.md#sqljs).
+
+## Quick examples
 
 ```javascript
 // require dependences
@@ -30,7 +41,7 @@ using(db.conn(), function (conn) {
 }); // automatic release the connection to pool
 ```
 
-### Transactions
+###Transactions
 
 ```javascript
 // send 10 coins from user_id=3 to user_id=4
@@ -59,7 +70,7 @@ using(db.conn(), function (conn) {
 });
 ```
 
-## Parallel task
+###Parallel task
 
 ```javascript
 // print array of data (from query) and the total items in the table
@@ -74,7 +85,7 @@ using(db.conn(), db.conn(), function (conn1, conn2) {
 });
 ```
 
-## Using Shorthands
+###Using Shorthands
 
 ```javascript
 // shorthands are static methods in the DBH 'class'.
@@ -96,7 +107,7 @@ using(db.conn(), function (conn) {
 });
 ```
 
-## Using objects as replacement
+###Using objects as replacement
 
 ```javascript
 // This is the first example, note that
@@ -112,7 +123,7 @@ using(db.conn(), function (conn) {
 });
 ```
 
-## Prepared Statements
+###Prepared Statements
 
 ```javascript
 // DBH.prepare receives a SQL statement and return function that receives the
@@ -128,56 +139,12 @@ using(db.conn(), function (conn) {
 });
 ```
 
-## Complex example
-
-```javascript
-// limit the number of users to 1000 and send an email
-// notifying affected users in a transaction.
-var DBH = require('dbh-pg'),
-    Promise = require('bluebird'),
-    using = Promise.using,
-    db = new DBH('postgres://postgres@localhost/db2test');
-    
-var nodemailer = require('nodemailer'), // not included, used for this example only
-    transporter = nodemailer.createTransport(),
-    sendMail = Promise.promisify(transporter.sendMail);
-    
-using(db.conn(), function (conn) {
-
-    var updateAmountTo1000 = DBH.prepare(
-        'update user set amount = 1000 where email=$email'
-    );
-    
-    conn
-    .begin()
-    .then(DBH.fetchAll('select email, amount from user where amount > $1', [1000]))
-    .then(function (users) {
-        // map is because users is an array
-        var promises = users.map(function (user) {
-            return this.exec(updateAmountTo1000(user))
-                .then(function () {
-                    sendMail({
-                        from : 'no-reply@example.com',
-                        to : user.email,
-                        subject : ':P',
-                        text : 'You had $ '
-                            + user.amount
-                            + ' in your account. Sorry'
-                    })
-                });
-        }.bind(this));
-        
-        return Promise.all(promises);
-    })
-    .then(DBH.commit);
-    
-});
-```
-
-## TODO
+##TODO
 
 Full docs
 
-## License
+##License
 
 MIT
+
+[node-postgres]: https://github.com/brianc/node-postgres
