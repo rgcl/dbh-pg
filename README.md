@@ -1,4 +1,5 @@
 > **WARNING!** This doc is for *v2.x*, the *v1.x* was experimental.
+> The *v2.x* is not ready yet
 
 #![BDH-PG](logo.png?raw=true)
 
