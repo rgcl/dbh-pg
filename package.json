@@ -1,7 +1,7 @@
 {
   "name": "dbh-pg",
   "version": "2.0.0",
-  "description": "Database Handler for PostgreSQL made to enjoy to work with SQL using promises",
+  "description": "Lightweight Database Handler for PostgreSQL writer upon node-postgres and bluebird.",
   "main": "lib/DBH.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.js -R spec"
@@ -19,6 +19,7 @@
     "promise",
     "postgres",
     "PostgreSQL",
+    "bluebird",
     "transaction"
   ],
   "author": {
