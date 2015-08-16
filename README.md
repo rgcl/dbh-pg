@@ -33,7 +33,7 @@ $ npm install bluebird
 
 > 1. Require the dependencies.
 > 2. [Instantiate](API.md#new-dbhstring-conextionstring---object-driver----dbh) the DBH (Internally creates a connection pool).
-> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) to get a connection from the pool and then auto release it. Is important that the callback function returns the connection promise.
+> 3. Use [`Promise.using`](https://github.com/petkaantonov/bluebird/blob/master/API.md#promiseusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise) (or the shorhand ``DBH.using``) to get a connection from the pool and then auto release it. Is important that the callback function returns the connection promise.
 
 ```javascript
 // require dependences

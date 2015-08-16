@@ -1,3 +1,9 @@
+# 2.0.2 2015-08-16
+
+* Update the ``pg`` dependence to v4.*
+* Now ``bluebird`` is an internal dependence, so you can use ``DBH.using`` or ``Promise.using``.
+* Finished the API documentation
+
 # 1.0.1 2014-10-26
 
 * Uncommited transaction now generate automatic rollback
