@@ -1,6 +1,6 @@
 {
   "name": "dbh-pg",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Lightweight Database Handler for PostgreSQL writer upon node-postgres and bluebird.",
   "main": "lib/DBH.js",
   "scripts": {
