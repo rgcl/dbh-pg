@@ -13,7 +13,7 @@
   - [DBH](#dbh)
     - [`object DBH.sanitize`](#object-dbhsanitize)
     - [`object DBH.sql`](#object-dbhsql)
-    - [`DBH.using(Promise|Disposer promise, Promise|Disposer promise ..., Function handler) -> Promise`](#dbhusingpromisedisposer-promise-promisedisposer-promise--function-handler)----promise)
+    - [`DBH.using(Promise|Disposer promise, Promise|Disposer promise ..., Function handler) -> Promise`](https://github.com/sapienlab/dbh-pg/blob/master/API.md#dbhusingpromisedisposer-promise-promisedisposer-promise--function-handler---promise)
     - [`DBH.prepare(string query)  -> Function`](#dbhpreparestring-query---function)
     - [`DBH.one([ int index ]) -> Function`](#dbhone-int-index----function)
     - [`DBH.{shorthand}({args})  -> Function`](#dbhshorthandargs---function)
