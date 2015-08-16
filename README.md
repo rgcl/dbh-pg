@@ -8,18 +8,18 @@
 
 Lightweight Database Handler for PostgreSQL writer upon [node-postgres][] and [bluebird][].
 
-##Why?
+## Why?
 Because [node-postgres] is too low level and is not funny
 to write deeply nested functions for commons task such as create transactions.
 
-##Features
+## Features
 - [Promises/A+](https://promisesaplus.com/) style by [bluebird][].
 - [Full Documented API](API.md#api-reference).
 - [Full Tested API](test/).
 - Made with simple and clean code.
 - Extra utils for [sanitization](API.md#sanitizejs) and [sql creation](API.md#sqljs).
 
-##Installation
+## Installation
 
 The latest stable version:
 ```sh
@@ -29,7 +29,7 @@ It is recommended that you also install [bluebird][] for use `Promise.using`:
 ```sh
 $ npm install bluebird
 ```
-##Usage
+## Usage
 
 > 1. Require the dependencies.
 > 2. [Instantiate](API.md#new-dbhstring-conextionstring---object-driver----dbh) the DBH (Internally creates a connection pool).
@@ -55,11 +55,11 @@ using(db.conn(), function (conn) {
 ```
 [`conn.fetchOne`](API.md#fetchonestring-query---objectarray-data----promise)
 
-###Transactions
+### Transactions
 
 > 1. Call `conn.begin` to start the transaction
 > 2. Use the transaction
-> 3. Explicit call `conn.commit`, if not auto rollback is applied before release the connection to the pool.
+> 3. Explicit call `conn.commit`, else auto rollback is applied before release the connection to the pool.
 
 ```javascript
 // send 10 coins from user_id=3 to user_id=4
@@ -88,7 +88,7 @@ using(db.conn(), function (conn) {
 });
 ```
 [`conn.begin`](API.md#begin---promise) [`conn.exec`](API.md#execstring-query---objectarray-data----promise) [`conn.commit`](API.md#commit---promise)
-###Parallel task
+### Parallel task
 
 ```javascript
 // print array of data (from query) and the total items in the table
@@ -103,7 +103,7 @@ using(db.conn(), db.conn(), function (conn1, conn2) {
 })
 ```
 
-###Using Shorthands
+### Using Shorthands
 
 ```javascript
 // shorthands are static methods in the DBH 'class'.
@@ -125,7 +125,8 @@ using(db.conn(), function (conn) {
 })
 ```
 [`DBH shorthands`](API.md#dbhshorthandargs---function)
-###Using objects as replacement
+
+### Using objects as replacement
 
 ```javascript
 // This is the first example, note that
@@ -139,7 +140,8 @@ using(db.conn(), function (conn) {
 })
 ```
 [`named parameterized queries`](API.md#named-placeholders)
-###Prepared Statements
+
+### Prepared Statements
 
 ```javascript
 // DBH.prepare receives a SQL statement and return function that receives the
@@ -156,12 +158,16 @@ using(db.conn(), function (conn) {
 })
 ```
 [`DBH.prepare`](API.md#dbhpreparestring-query---function)
-##Contributing
+## Contributing
 **We ♥ contributions**
 
 Please create a (tested) pull request :)
 
-##License
+## Alternatives
+* [`pg-promise`](https://www.npmjs.com/package/pg-promise)
+* [`pg-using-bluebird`](https://www.npmjs.com/package/pg-using-bluebird)
+
+## License
 
 [MIT LICENSE](LICENSE)
 
