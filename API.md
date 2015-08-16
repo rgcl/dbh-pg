@@ -180,7 +180,7 @@ transferOneLive(3, 5)
 ```
 > If catch, rollback is executed automatically by DBH-PG
 
-This library use `[bluebird](https://github.com/petkaantonov/bluebird)` library for promises. Despite Promise is native in node v0.12, bluebird has more tools for manage the promises (example, .using).
+This library use [`bluebird`](https://github.com/petkaantonov/bluebird) library for promises. Despite Promise is native in node v0.12, bluebird has more tools for manage the promises (example, .using).
 ___
 
 ###Security
