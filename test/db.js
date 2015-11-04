@@ -119,7 +119,7 @@ describe('DBH', function() {
     describe('transactions', function () {
 
         it('without commit', function() {
-            var id = 1,
+            var id = 2,
                 oldName = 'Old Name',
                 newName = 'New Name',
                 query = 'select name from person where id=' + id;
@@ -144,7 +144,7 @@ describe('DBH', function() {
         });
         
         it('with commit', function() {
-            var id = 2,
+            var id = 3,
                 oldName = 'Old Name',
                 newName = 'New Name',
                 query = 'select name from person where id=' + id;
