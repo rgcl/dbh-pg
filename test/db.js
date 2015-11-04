@@ -71,6 +71,10 @@ describe('DBH', function() {
         it('db is instance of DBH', function() {
             assert.equal(db instanceof DBH, true);
         });
+
+        it('DBH.using is strict equals Promise.using', function() {
+            assert.equal(DBH.using === Promise.using, true);
+        });
         
     });
     
