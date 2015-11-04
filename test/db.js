@@ -4,9 +4,10 @@
  * Copyright 2014 Sapienlab
  * Licensed under MIT (https://github.com/sapienlab/dbh-pg/blob/master/LICENSE)
  * ======================================================================== */
-'use strict';
+
 
 describe('DBH', function() {
+    'use strict';
     
     var assert = require('assert'),
         DBH = require('../'),
@@ -61,7 +62,7 @@ describe('DBH', function() {
                 return Promise.all(people.map(function (person) {
                     return me.exec(prepared([person.name, person.age]));
                 }));
-            })
+            });
         });
         
     });
@@ -171,23 +172,23 @@ describe('DBH', function() {
 
     describe('fetchOne', function () {
 
-        it('simple', function() {
+        it('fetchOne:simple', function() {
             return using(db.conn(), function(conn) {
                 conn.fetchOne('select id, name, age from person where id=1');
             }).then(function(person) {
-                assert.equal(person, people[0])
+                assert.equal(person, people[0]);
             });
         });
 
-        it('named param', function() {
+        it('fetchOne:named param', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person where id=:id', { id: 1 });
+                conn.fetchOne('select id, name, age from person where id=$id', { id: 1 });
             }).then(function(person) {
                 assert.equal(person, people[0])
             });
         });
 
-        it('numeric param', function() {
+        it('fetchOne:numeric param', function() {
             return using(db.conn(), function(conn) {
                 conn.fetchOne('select id, name, age from person where id=$1', [1]);
             }).then(function(person) {
@@ -195,15 +196,14 @@ describe('DBH', function() {
             });
         });
 
-        it('first', function() {
+        it('fetchOne:first', function() {
             return using(db.conn(), function(conn) {
                 conn.fetchOne('select id, name, age from person');
             }).then(function(person) {
                 assert.equal(person, people[0])
             });
         });
-
-        it('not exists', function() {
+        it('fetchOne:not exists', function() {
             return using(db.conn(), function(conn) {
                 conn.fetchOne('select id, name, age from person where id=99999');
             }).then(function(person) {
