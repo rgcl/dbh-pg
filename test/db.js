@@ -172,40 +172,40 @@ describe('DBH', function() {
 
     describe('fetchOne', function () {
 
-        it('fetchOne:simple', function() {
+        it('simple', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person where id=1');
+                return conn.fetchOne('select id, name, age from person where id=1');
             }).then(function(person) {
                 assert.equal(person, people[0]);
             });
         });
 
-        it('fetchOne:named param', function() {
+        it('named param', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person where id=$id', { id: 1 });
+                return conn.fetchOne('select id, name, age from person where id=$id', { id: 1 });
             }).then(function(person) {
                 assert.equal(person, people[0])
             });
         });
 
-        it('fetchOne:numeric param', function() {
+        it('numeric param', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person where id=$1', [1]);
+                return conn.fetchOne('select id, name, age from person where id=$1', [1]);
             }).then(function(person) {
                 assert.equal(person, people[0])
             });
         });
 
-        it('fetchOne:first', function() {
+        it('first', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person');
+                return conn.fetchOne('select id, name, age from person');
             }).then(function(person) {
                 assert.equal(person, people[0])
             });
         });
-        it('fetchOne:not exists', function() {
+        it('not exists', function() {
             return using(db.conn(), function(conn) {
-                conn.fetchOne('select id, name, age from person where id=99999');
+                return conn.fetchOne('select id, name, age from person where id=99999');
             }).then(function(person) {
                 assert.equal(person, null)
             });
