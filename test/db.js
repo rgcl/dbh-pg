@@ -167,6 +167,50 @@ describe('DBH', function() {
             });
         });
 
-    })
+    });
+
+    describe('fetchOne', function () {
+
+        it('simple', function() {
+            return using(db.conn(), function(conn) {
+                conn.fetchOne('select id, name, age from person where id=1');
+            }).then(function(person) {
+                assert.equal(person, people[0])
+            });
+        });
+
+        it('named param', function() {
+            return using(db.conn(), function(conn) {
+                conn.fetchOne('select id, name, age from person where id=:id', { id: 1 });
+            }).then(function(person) {
+                assert.equal(person, people[0])
+            });
+        });
+
+        it('numeric param', function() {
+            return using(db.conn(), function(conn) {
+                conn.fetchOne('select id, name, age from person where id=$1', [1]);
+            }).then(function(person) {
+                assert.equal(person, people[0])
+            });
+        });
+
+        it('first', function() {
+            return using(db.conn(), function(conn) {
+                conn.fetchOne('select id, name, age from person');
+            }).then(function(person) {
+                assert.equal(person, people[0])
+            });
+        });
+
+        it('not exists', function() {
+            return using(db.conn(), function(conn) {
+                conn.fetchOne('select id, name, age from person where id=99999');
+            }).then(function(person) {
+                assert.equal(person, null)
+            });
+        });
+
+    });
     
 });
