@@ -210,7 +210,7 @@ describe('DBH', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person where id=99999');
             }).then(function(person) {
-                assert.deepEqual(person, null)
+                assert.strictEqual(person, undefined)
             });
         });
 
