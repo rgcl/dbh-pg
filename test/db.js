@@ -179,7 +179,7 @@ describe('DBH', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person where id=1');
             }).then(function(person) {
-                assert.equal(person, person1);
+                assert.deepEqual(person, person1);
             });
         });
 
@@ -187,7 +187,7 @@ describe('DBH', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person where id=$id', { id: 1 });
             }).then(function(person) {
-                assert.equal(person, person1)
+                assert.deepEqual(person, person1)
             });
         });
 
@@ -195,7 +195,7 @@ describe('DBH', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person where id=$1', [1]);
             }).then(function(person) {
-                assert.equal(person, person1)
+                assert.deepEqual(person, person1)
             });
         });
 
@@ -203,14 +203,14 @@ describe('DBH', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person');
             }).then(function(person) {
-                assert.equal(person, person1)
+                assert.deepEqual(person, person1)
             });
         });
         it('not exists', function() {
             return using(db.conn(), function(conn) {
                 return conn.fetchOne('select id, name, age from person where id=99999');
             }).then(function(person) {
-                assert.equal(person, null)
+                assert.deepEqual(person, null)
             });
         });
 
