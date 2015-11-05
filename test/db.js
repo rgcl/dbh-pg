@@ -215,5 +215,31 @@ describe('DBH', function() {
         });
 
     });
+
+    describe('fetchAll', function () {
+
+        return using(db.conn(), function(conn) {
+            return conn.exec('select id, name, age from person');
+        }).then(function(data) {
+            var peopleData = data.rows;
+
+            it('simple', function() {
+                return using(db.conn(), function(conn) {
+                    return conn.fetchAll('select id, name, age from person');
+                }).then(function(people) {
+                    assert.deepEqual(people, peopleData);
+                });
+            });
+
+            it('empty', function() {
+                return using(db.conn(), function(conn) {
+                    return conn.fetchAll('select id, name, age from person where false ');
+                }).then(function(people) {
+                    assert.deepEqual(people, []);
+                });
+            });
+        });
+
+    });
     
 });
