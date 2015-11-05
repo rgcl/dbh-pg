@@ -241,5 +241,94 @@ describe('DBH', function() {
         });
 
     });
+
+    describe('fetchColumn', function () {
+
+        var dataNames = ['Aaron', 'New Name', 'New Name'];
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchColumn('select name from person limit 3');
+            }).then(function(names) {
+                assert.deepEqual(names, dataNames);
+            });
+        });
+
+        it('with column name', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person person limit 3', {}, 'name');
+            }).then(function(names) {
+                assert.deepEqual(names, dataNames);
+            });
+        });
+
+    });
+
+    describe('fetchScalar', function () {
+
+        var datName = 'Aaron';
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchScalar('select name from person');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+        it('default one', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchScalar('select name from person limit 1');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+        it('with column name', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person person', {}, 'name');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+    });
+
+    describe('insert', function () {
+
+        var dataPerson = { name: 'Pepe26', age; 26 };
+        var dataPersonNull = { name: 'PepeNull', age: null };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPerson);
+            })
+            .then(DBH.fetchOne('select name, age from person where name=$name', dataPerson))
+            .then(function(person) {
+                assert.deepEqual(person, dataPerson);
+            });
+        });
+
+        it('with null', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPersonNull);
+            })
+            .then(DBH.fetchOne('select name, age from person where name=$name', dataPersonNull))
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonNull);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPerson, 'name, age');
+            })
+            .then(DBH.one())
+            .then(function(person) {
+                assert.deepEqual(person, dataPerson);
+            });
+        });
+
+    });
     
 });
