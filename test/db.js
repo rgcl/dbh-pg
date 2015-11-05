@@ -266,7 +266,7 @@ describe('DBH', function() {
 
     describe('fetchScalar', function () {
 
-        var datName = 'Aaron';
+        var dataName = 'Aaron';
 
         it('default', function() {
             return using(db.conn(), function(conn) {
@@ -311,9 +311,9 @@ describe('DBH', function() {
 
         it('with null', function() {
             return using(db.conn(), function(conn) {
-                return conn.insert('person', dataPersonNull);
+                return conn.insert('person', dataPersonNull)
+                    .then(DBH.fetchOne('select name, age from person where name=$name', dataPersonNull))
             })
-            .then(DBH.fetchOne('select name, age from person where name=$name', dataPersonNull))
             .then(function(person) {
                 assert.deepEqual(person, dataPersonNull);
             });
@@ -321,9 +321,9 @@ describe('DBH', function() {
 
         it('with returning', function() {
             return using(db.conn(), function(conn) {
-                return conn.insert('person', dataPerson, 'name, age');
+                return conn.insert('person', dataPerson, 'name, age')
+                    .then(DBH.one());
             })
-            .then(DBH.one())
             .then(function(person) {
                 assert.deepEqual(person, dataPerson);
             });
