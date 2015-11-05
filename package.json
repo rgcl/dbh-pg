@@ -1,6 +1,6 @@
 {
   "name": "dbh-pg",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "Lightweight Database Handler for PostgreSQL writer upon node-postgres and bluebird.",
   "main": "lib/DBH.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "pg": "4.*",
-    "bluebird": "2.*"
+    "bluebird": "3.*"
   },
   "devDependencies": {
     "mocha": "*"

@@ -1,3 +1,10 @@
+# 2.1.0 2015-11-05
+
+* Fix bugs [12](https://github.com/sapienlab/dbh-pg/issues/12) and [13](https://github.com/sapienlab/dbh-pg/issues/13).
+* Fix error in the API Docs, about the `returning` clausule in `.insert`, `.update` and `.delete`.
+  When `returning` param exists, then returns a [Result Object](#result-object).
+* Update the `bluebird` dependence to v3.*
+
 # 2.0.2 2015-08-16
 
 * Update the ``pg`` dependence to v4.*

@@ -4,9 +4,10 @@
  * Copyright 2014 Sapienlab
  * Licensed under MIT (https://github.com/sapienlab/dbh-pg/blob/master/LICENSE)
  * ======================================================================== */
-'use strict';
+
 
 describe('DBH', function() {
+    'use strict';
     
     var assert = require('assert'),
         DBH = require('../'),
@@ -61,7 +62,7 @@ describe('DBH', function() {
                 return Promise.all(people.map(function (person) {
                     return me.exec(prepared([person.name, person.age]));
                 }));
-            })
+            });
         });
         
     });
@@ -118,7 +119,7 @@ describe('DBH', function() {
     describe('transactions', function () {
 
         it('without commit', function() {
-            var id = 1,
+            var id = 2,
                 oldName = 'Old Name',
                 newName = 'New Name',
                 query = 'select name from person where id=' + id;
@@ -143,7 +144,7 @@ describe('DBH', function() {
         });
         
         it('with commit', function() {
-            var id = 2,
+            var id = 3,
                 oldName = 'Old Name',
                 newName = 'New Name',
                 query = 'select name from person where id=' + id;
@@ -167,6 +168,248 @@ describe('DBH', function() {
             });
         });
 
-    })
+    });
+
+    describe('fetchOne', function () {
+
+        var person1 = people[0];
+        person1.id = 1;
+
+        it('simple', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person where id=1');
+            }).then(function(person) {
+                assert.deepEqual(person, person1);
+            });
+        });
+
+        it('named param', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person where id=$id', { id: 1 });
+            }).then(function(person) {
+                assert.deepEqual(person, person1)
+            });
+        });
+
+        it('numeric param', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person where id=$1', [1]);
+            }).then(function(person) {
+                assert.deepEqual(person, person1)
+            });
+        });
+
+        it('first', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person');
+            }).then(function(person) {
+                assert.deepEqual(person, person1)
+            });
+        });
+        it('not exists', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchOne('select id, name, age from person where id=99999');
+            }).then(function(person) {
+                assert.strictEqual(person, undefined)
+            });
+        });
+
+    });
+
+    describe('fetchAll', function () {
+
+        return using(db.conn(), function(conn) {
+            return conn.exec('select id, name, age from person');
+        }).then(function(data) {
+            var peopleData = data.rows;
+
+            it('simple', function() {
+                return using(db.conn(), function(conn) {
+                    return conn.fetchAll('select id, name, age from person');
+                }).then(function(people) {
+                    assert.deepEqual(people, peopleData);
+                });
+            });
+
+            it('empty', function() {
+                return using(db.conn(), function(conn) {
+                    return conn.fetchAll('select id, name, age from person where false ');
+                }).then(function(people) {
+                    assert.deepEqual(people, []);
+                });
+            });
+        });
+
+    });
+
+    describe('fetchColumn', function () {
+
+        var dataNames = ['Aaron', 'David', 'Elvis'];
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchColumn('select name from person limit 3');
+            }).then(function(names) {
+                assert.deepEqual(names, dataNames);
+            });
+        });
+
+        it('with column name', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchColumn('select id, name, age from person person limit 3', {}, 'name');
+            }).then(function(names) {
+                assert.deepEqual(names, dataNames);
+            });
+        });
+
+    });
+
+    describe('fetchScalar', function () {
+
+        var dataName = 'Aaron';
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchScalar('select name from person');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+        it('default one', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchScalar('select name from person limit 1');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+        it('with column name', function() {
+            return using(db.conn(), function(conn) {
+                return conn.fetchScalar('select id, name, age from person person', {}, 'name');
+            }).then(function(name) {
+                assert.deepEqual(name, dataName);
+            });
+        });
+
+    });
+
+    describe('insert', function () {
+
+        var dataPerson = { name: 'Pepe26', age: 26 };
+        var dataPersonNull = { name: 'PepeNull', age: null };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPerson)
+                    .then(DBH.fetchOne('select name, age from person where name=$name', dataPerson))
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPerson);
+            });
+        });
+
+        it('with null', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPersonNull)
+                    .then(DBH.fetchOne('select name, age from person where name=$name', dataPersonNull))
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonNull);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.insert('person', dataPerson, 'name, age')
+                    .then(DBH.one());
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPerson);
+            });
+        });
+
+    });
+
+    describe('update', function () {
+
+        var dataUpdate = { age: 26 };
+        var dataWhere = { name: 'Aaron' };
+        var dataPersonEnd = { id: 1, name: 'Aaron', age: 26 };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.update('person', dataUpdate, dataWhere)
+                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere))
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonEnd);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.update('person', dataUpdate, dataWhere, 'id, name, age')
+                    .then(DBH.one());
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonEnd);
+            });
+        });
+
+    });
+
+    describe('delete', function () {
+
+        var dataWhere1 = { name: 'Aaron' };
+        var dataWhere2 = { name: 'Frank' };
+        var dataPerson2End = { id: 6, name: 'Frank', age: 60 };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.delete('person', dataWhere1)
+                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere1))
+            })
+            .then(function(person) {
+                assert.strictEqual(person, undefined);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.delete('person', dataWhere2, 'id, name, age')
+                    .then(DBH.one());
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPerson2End);
+            });
+        });
+
+    });
+
+    describe('exists', function () {
+
+        var dataWhereExists = { name: 'Ronda' };
+        var dataWhereNotExists = { name: 'Aaron' };
+
+        it('exists', function() {
+            return using(db.conn(), function(conn) {
+                return conn.exists('person', dataWhereExists)
+            })
+            .then(function(exists) {
+                assert.strictEqual(exists, true);
+            });
+        });
+
+        it('not exists', function() {
+            return using(db.conn(), function(conn) {
+                return conn.exists('person', dataWhereNotExists)
+            })
+            .then(function(exists) {
+                assert.strictEqual(exists, false);
+            });
+        });
+
+    });
     
 });
