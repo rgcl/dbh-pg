@@ -330,5 +330,85 @@ describe('DBH', function() {
         });
 
     });
+
+    describe('update', function () {
+
+        var dataUpdate = { age: 26 };
+        var dataWhere = { name: 'Aaron' };
+        var dataPersonEnd = { id: 1, name: 'Aaron', age: 26 };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.update('person', dataUpdate, dataWhere)
+                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere))
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonEnd);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.update('person', dataUpdate, dataWhere, 'id, name, age')
+                    .then(DBH.one());
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonEnd);
+            });
+        });
+
+    });
+
+    describe('delete', function () {
+
+        var dataWhere = { name: 'Aaron' };
+        var dataPersonEnd = { id: 1, name: 'Aaron', age: 26 };
+
+        it('default', function() {
+            return using(db.conn(), function(conn) {
+                return conn.delete('person', dataWhere)
+                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere))
+            })
+            .then(function(person) {
+                assert.strictEqual(person, null);
+            });
+        });
+
+        it('with returning', function() {
+            return using(db.conn(), function(conn) {
+                return conn.delete('person', dataWhere, 'id, name, age')
+                    .then(DBH.one());
+            })
+            .then(function(person) {
+                assert.deepEqual(person, dataPersonEnd);
+            });
+        });
+
+    });
+
+    describe('exists', function () {
+
+        var dataWhereExists = { name: 'Brian' };
+        var dataWhereNotExists = { name: 'Aaron' };
+
+        it('exists', function() {
+            return using(db.conn(), function(conn) {
+                return conn.exists('person', dataWhereExists)
+            })
+            .then(function(exists) {
+                assert.strictEqual(exists, true);
+            });
+        });
+
+        it('not exists', function() {
+            return using(db.conn(), function(conn) {
+                return conn.exists('person', dataWhereNotExists)
+            })
+            .then(function(exists) {
+                assert.strictEqual(exists, false);
+            });
+        });
+
+    });
     
 });
