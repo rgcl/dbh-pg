@@ -361,13 +361,14 @@ describe('DBH', function() {
 
     describe('delete', function () {
 
-        var dataWhere = { name: 'Aaron' };
-        var dataPersonEnd = { id: 1, name: 'Aaron', age: 26 };
+        var dataWhere1 = { name: 'Aaron' };
+        var dataWhere2 = { name: 'Frank' };
+        var dataPerson2End = { id: 6, name: 'Frank', age: 60 };
 
         it('default', function() {
             return using(db.conn(), function(conn) {
-                return conn.delete('person', dataWhere)
-                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere))
+                return conn.delete('person', dataWhere1)
+                    .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere1))
             })
             .then(function(person) {
                 assert.strictEqual(person, undefined);
@@ -376,11 +377,11 @@ describe('DBH', function() {
 
         it('with returning', function() {
             return using(db.conn(), function(conn) {
-                return conn.delete('person', dataWhere, '*')
+                return conn.delete('person', dataWhere2, 'id, name, age')
                     .then(DBH.one());
             })
             .then(function(person) {
-                assert.deepEqual(person, dataPersonEnd);
+                assert.deepEqual(person, dataPerson2End);
             });
         });
 
@@ -388,7 +389,7 @@ describe('DBH', function() {
 
     describe('exists', function () {
 
-        var dataWhereExists = { name: 'Brian' };
+        var dataWhereExists = { name: 'Ronda' };
         var dataWhereNotExists = { name: 'Aaron' };
 
         it('exists', function() {
