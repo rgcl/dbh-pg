@@ -301,9 +301,9 @@ describe('DBH', function() {
 
         it('default', function() {
             return using(db.conn(), function(conn) {
-                return conn.insert('person', dataPerson);
+                return conn.insert('person', dataPerson)
+                    .then(DBH.fetchOne('select name, age from person where name=$name', dataPerson))
             })
-            .then(DBH.fetchOne('select name, age from person where name=$name', dataPerson))
             .then(function(person) {
                 assert.deepEqual(person, dataPerson);
             });
