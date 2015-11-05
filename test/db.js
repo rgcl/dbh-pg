@@ -370,13 +370,13 @@ describe('DBH', function() {
                     .then(DBH.fetchOne('select id, name, age from person where name=$name', dataWhere))
             })
             .then(function(person) {
-                assert.strictEqual(person, null);
+                assert.strictEqual(person, undefined);
             });
         });
 
         it('with returning', function() {
             return using(db.conn(), function(conn) {
-                return conn.delete('person', dataWhere, 'id, name, age')
+                return conn.delete('person', dataWhere, '*')
                     .then(DBH.one());
             })
             .then(function(person) {
