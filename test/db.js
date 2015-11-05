@@ -244,7 +244,7 @@ describe('DBH', function() {
 
     describe('fetchColumn', function () {
 
-        var dataNames = ['Aaron', 'New Name', 'New Name'];
+        var dataNames = ['Aaron', 'David', 'Elvis'];
 
         it('default', function() {
             return using(db.conn(), function(conn) {
@@ -256,7 +256,7 @@ describe('DBH', function() {
 
         it('with column name', function() {
             return using(db.conn(), function(conn) {
-                return conn.fetchOne('select id, name, age from person person limit 3', {}, 'name');
+                return conn.fetchColumn('select id, name, age from person person limit 3', {}, 'name');
             }).then(function(names) {
                 assert.deepEqual(names, dataNames);
             });
@@ -286,7 +286,7 @@ describe('DBH', function() {
 
         it('with column name', function() {
             return using(db.conn(), function(conn) {
-                return conn.fetchOne('select id, name, age from person person', {}, 'name');
+                return conn.fetchScalar('select id, name, age from person person', {}, 'name');
             }).then(function(name) {
                 assert.deepEqual(name, dataName);
             });
