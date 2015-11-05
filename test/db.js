@@ -296,7 +296,7 @@ describe('DBH', function() {
 
     describe('insert', function () {
 
-        var dataPerson = { name: 'Pepe26', age; 26 };
+        var dataPerson = { name: 'Pepe26', age: 26 };
         var dataPersonNull = { name: 'PepeNull', age: null };
 
         it('default', function() {
