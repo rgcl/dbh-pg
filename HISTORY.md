@@ -1,3 +1,9 @@
+# 2.1.1 2015-11-05
+
+* In the documentation the use of quotation marks is clarified for the table names for `.ìnsert`, `.update`, `.delete`,
+  `.exists` and `.count`.
+* Documented the [`.verbose`](https://github.com/sapienlab/dbh-pg/blob/master/API.md#new-dbhobject-settings---object-driver----dbh) option.
+
 # 2.1.0 2015-11-05
 
 * Fix bugs [12](https://github.com/sapienlab/dbh-pg/issues/12) and [13](https://github.com/sapienlab/dbh-pg/issues/13).
