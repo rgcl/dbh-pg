@@ -1,7 +1,7 @@
 /* ========================================================================
  * DBH-PG: test sql.js
  * ========================================================================
- * Copyright 2014 Sapienlab, Rodrigo González and Contributors.
+ * Copyright 2014-2015 Sapienlab, Rodrigo González and Contributors.
  * Licensed under MIT LICENSE (SEE LICENSE)
  * ======================================================================== */
 'use strict';
