@@ -1,4 +1,4 @@
-> This documentation is for the current dbh-pg v2.x
+> This documentation is for the current dbh-pg v3.x
 
 #API Reference
 
@@ -193,7 +193,7 @@ Consider ALL other methods to be not safe for user-input.
   `theUsername` and `thePass` are used in a [parameterized query](#parameterized-queries).
 - `conn.insert('account', { username: theUsername, pass: thePass })`. Because 
   `theUsername` and `thePass` are used in a [parameterized query](#parameterized-queries).
-- 
+
 #### Examples of unsafe usage of user-input:
 - `conn.exec("select * from account where username='" + theUsername + "' and pass='" + thePass + "'")`. Because 
   `theUsername` or `thePass` can be `boom!'; drop table account -- `.
